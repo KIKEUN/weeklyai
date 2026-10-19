@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <title>Weekly AI (VOL.6)</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/static/pretendard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --font-sans: Pretendard, "Noto Sans KR", "Malgun Gothic", system-ui, -apple-system, "Segoe UI", sans-serif;
+      --font-cover-headline-min: 1.85rem;
+      --font-cover-headline-vw: 4.8vw;
+      --font-cover-headline-max: 2.45rem;
+      --font-cover-headline-mark-em: 1.42;
+    }
+    html { overflow-x: hidden; }
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background: #ffffff;
+      font-family: var(--font-sans);
+    }
+
+    .carousel-shell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      padding: 48px 16px 64px;
+      gap: 14px;
+    }
+
+    .carousel-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      width: 100%;
+      max-width: 700px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .carousel__viewport {
+      flex: 0 1 540px;
+      min-width: 0;
+      width: 540px;
+      max-width: 540px;
+      overflow: hidden;
+      border-radius: 20px;
+      position: relative;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      touch-action: pan-y;
+      background: transparent;
+      transform-origin: top center;
+      -webkit-transform-origin: top center;
+    }
+
+    .carousel__inner {
+      width: 540px;
+      height: 720px;
+      overflow: hidden;
+      border-radius: 20px;
+      position: relative;
+    }
+
+    @media (max-width: 600px) {
+      .carousel__viewport { height: 612px; transform: scale(0.85); -webkit-transform: scale(0.85); }
+      @supports (zoom: 0.85) {
+        .carousel__viewport { transform: none; -webkit-transform: none; zoom: 0.85; }
+      }
+    }
+    @media (max-width: 520px) {
+      .carousel__viewport { height: 540px; transform: scale(0.75); -webkit-transform: scale(0.75); }
+      @supports (zoom: 0.75) {
+        .carousel__viewport { transform: none; -webkit-transform: none; zoom: 0.75; }
+      }
+    }
+    @media (max-width: 460px) {
+      .carousel__viewport { height: 468px; transform: scale(0.65); -webkit-transform: scale(0.65); }
+      @supports (zoom: 0.65) {
+        .carousel__viewport { transform: none; -webkit-transform: none; zoom: 0.65; }
+      }
+    }
+    @media (max-width: 400px) {
+      .carousel__viewport { height: 396px; transform: scale(0.55); -webkit-transform: scale(0.55); }
+      @supports (zoom: 0.55) {
+        .carousel__viewport { transform: none; -webkit-transform: none; zoom: 0.55; }
+      }
+    }
+
+    #deck {
+      position: relative !important;
+      width: 540px !important;
+      height: 720px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: block !important;
+    }
+    #deck > .card {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      margin: 0 !important;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.32s ease, visibility 0s linear 0.32s;
+      pointer-events: none;
+    }
+
+    .wai-nav {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+
+    #hcn-nav-1:checked ~ .carousel-row #hcn-card-1,
+    #hcn-nav-2:checked ~ .carousel-row #hcn-card-2,
+    #hcn-nav-3:checked ~ .carousel-row #hcn-card-3,
+    #hcn-nav-4:checked ~ .carousel-row #hcn-card-4,
+    #hcn-nav-5:checked ~ .carousel-row #hcn-card-5,
+    #hcn-nav-6:checked ~ .carousel-row #hcn-card-6,
+    #hcn-nav-7:checked ~ .carousel-row #hcn-card-7 {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      z-index: 2;
+      transition: opacity 0.32s ease, visibility 0s linear 0s;
+    }
+
+    .nav-stack { position: relative; width: 44px; height: 44px; flex-shrink: 0; align-self: center; }
+    .nav-stack > .nav-btn { position: absolute; top: 0; left: 0; display: none; }
+
+    #hcn-nav-2:checked ~ .carousel-row .nav-prev-from-2 { display: inline-flex; }
+    #hcn-nav-3:checked ~ .carousel-row .nav-prev-from-3 { display: inline-flex; }
+    #hcn-nav-4:checked ~ .carousel-row .nav-prev-from-4 { display: inline-flex; }
+    #hcn-nav-5:checked ~ .carousel-row .nav-prev-from-5 { display: inline-flex; }
+    #hcn-nav-6:checked ~ .carousel-row .nav-prev-from-6 { display: inline-flex; }
+    #hcn-nav-7:checked ~ .carousel-row .nav-prev-from-7 { display: inline-flex; }
+    #hcn-nav-1:checked ~ .carousel-row .nav-prev-disabled { display: inline-flex; }
+
+    #hcn-nav-1:checked ~ .carousel-row .nav-next-from-1 { display: inline-flex; }
+    #hcn-nav-2:checked ~ .carousel-row .nav-next-from-2 { display: inline-flex; }
+    #hcn-nav-3:checked ~ .carousel-row .nav-next-from-3 { display: inline-flex; }
+    #hcn-nav-4:checked ~ .carousel-row .nav-next-from-4 { display: inline-flex; }
+    #hcn-nav-5:checked ~ .carousel-row .nav-next-from-5 { display: inline-flex; }
+    #hcn-nav-6:checked ~ .carousel-row .nav-next-from-6 { display: inline-flex; }
+    #hcn-nav-7:checked ~ .carousel-row .nav-next-disabled { display: inline-flex; }
+
+    .nav-btn.is-disabled { opacity: 0.32; cursor: not-allowed; pointer-events: none; }
+    .nav-btn {
+      flex-shrink: 0;
+      align-self: center;
+      position: relative;
+      z-index: 10;
+      width: 46px;
+      height: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: 1px solid rgba(10, 90, 80, 0.16);
+      background: linear-gradient(180deg, #ffffff 0%, #f4f4f1 100%);
+      color: #0a3a36;
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      box-shadow:
+        0 6px 16px -8px rgba(8, 40, 38, 0.28),
+        0 1px 0 rgba(255, 255, 255, 0.9) inset;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+    .nav-btn:hover:not(.is-disabled) {
+      background: linear-gradient(180deg, #ffffff 0%, #ecf3ec 100%);
+      transform: translateY(-1px);
+      box-shadow:
+        0 10px 22px -10px rgba(8, 40, 38, 0.36),
+        0 1px 0 rgba(255, 255, 255, 0.9) inset;
+    }
+    .nav-btn:active:not(.is-disabled) { transform: translateY(0); }
+
+    .progress-dots {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .progress-dots .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(10, 58, 54, 0.18);
+      transition: width 0.32s ease, background 0.32s ease, opacity 0.32s ease;
+    }
+    #hcn-nav-1:checked ~ .progress-dots .dot:nth-child(1),
+    #hcn-nav-2:checked ~ .progress-dots .dot:nth-child(2),
+    #hcn-nav-3:checked ~ .progress-dots .dot:nth-child(3),
+    #hcn-nav-4:checked ~ .progress-dots .dot:nth-child(4),
+    #hcn-nav-5:checked ~ .progress-dots .dot:nth-child(5),
+    #hcn-nav-6:checked ~ .progress-dots .dot:nth-child(6),
+    #hcn-nav-7:checked ~ .progress-dots .dot:nth-child(7) {
+      width: 22px;
+      background: linear-gradient(90deg, #0a4a48 0%, #1a8888 100%);
+    }
+
+    .card {
+      width: 540px;
+      height: 720px;
+      aspect-ratio: 3 / 4;
+      position: relative;
+      overflow: hidden;
+      border-radius: 22px;
+      box-shadow:
+        0 30px 60px -20px rgba(8, 40, 38, 0.55),
+        0 12px 24px -8px rgba(0, 0, 0, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      flex-shrink: 0;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      isolation: isolate;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 3;
+      border-radius: inherit;
+      background:
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.06 0'/></filter><rect width='180' height='180' filter='url(%23n)'/></svg>");
+      mix-blend-mode: overlay;
+      opacity: 0.5;
+    }
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 4;
+      border-radius: inherit;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 0 60px rgba(0, 30, 30, 0.18);
+    }
+
+    .card-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 20%, #d4e8a0 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 15%, #a8e6c1 0%, transparent 45%),
+        radial-gradient(ellipse at 50% 50%, #5ccfb1 0%, transparent 55%),
+        radial-gradient(ellipse at 30% 70%, #3cc4a7 0%, transparent 50%),
+        radial-gradient(ellipse at 75% 80%, #1a8f8f 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 95%, #0d6b6e 0%, transparent 50%),
+        linear-gradient(180deg, #c8e6a0 0%, #4dc9a0 40%, #1a8888 80%, #0a5a5e 100%);
+      z-index: 0;
+    }
+
+    .card-bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 120% 80% at 50% -20%, rgba(255,255,255,0.35) 0%, transparent 55%),
+        radial-gradient(ellipse 90% 60% at 100% 100%, rgba(0,30,40,0.18) 0%, transparent 50%),
+        radial-gradient(ellipse 70% 50% at 0% 100%, rgba(0,40,35,0.12) 0%, transparent 45%);
+    }
+
+    .card-content {
+      position: relative;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      padding: 32px 28px;
+    }
+
+    .card-content--inner { padding: 0; }
+    .card--cover .card-content--cover { padding: 24px 24px 22px; display: flex; flex-direction: column; min-height: 0; }
+
+    /* 1p cover video */
+    #hcn-card-1 .card-bg { display: none; }
+    #hcn-card-1::before { opacity: 0.28; }
+    #hcn-card-1::after { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
+    #hcn-card-1 .cover-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; z-index: 0; }
+    #hcn-card-1 .cover-bottom-deco {
+      position: absolute; left: 0; right: 0; bottom: 0; height: 52%; z-index: 1; pointer-events: none;
+      background: linear-gradient(180deg, rgba(8,12,12,0) 0%, rgba(8,12,12,0.35) 28%, rgba(8,12,12,0.78) 58%, rgba(8,12,12,0.94) 82%, rgba(8,12,12,1) 100%);
+    }
+    #hcn-card-1 .card-content--cover { position: relative; z-index: 2; }
+    #hcn-card-1 .footer-logo path { fill: #ffffff; }
+    #hcn-card-1 .footer-text { color: #ffffff; }
+
+    /* 1p: push hero copy down to sit on top of bottom gradient */
+    #hcn-card-1 .cover-inner {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: 0;
+      gap: 14px;
+    }
+    #hcn-card-1 .cover-hero-wrap {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding-bottom: 6px;
+    }
+    #hcn-card-1 .cover-inner__bottom { margin-top: 4px; }
+
+    .cover-figure { margin: 10px 0 14px; line-height: 0; }
+    .cover-figure img { display: block; width: 100%; max-height: 200px; object-fit: contain; object-position: left center; }
+    .cover-badge {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px 9px 14px;
+      margin-bottom: 12px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #f4fff6;
+      background: linear-gradient(135deg, rgba(10, 90, 80, 0.55) 0%, rgba(20, 140, 120, 0.45) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 999px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    }
+    .cover-badge::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #a7f3d0;
+      box-shadow: 0 0 8px rgba(167, 243, 208, 0.95);
+      animation: pulseDot 2.2s ease-in-out infinite;
+    }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.55; transform: scale(0.85); }
+    }
+    .cover-headline {
+      margin: 0;
+      font-size: clamp(var(--font-cover-headline-min), var(--font-cover-headline-vw), var(--font-cover-headline-max));
+      font-weight: 900;
+      line-height: 1.18;
+      letter-spacing: -0.045em;
+      color: #ffffff;
+      text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
+    }
+    .cover-headline__mark {
+      font-size: calc(1em * var(--font-cover-headline-mark-em));
+      background: linear-gradient(120deg, #d8fbe6 0%, #a7f3d0 45%, #6ee7b7 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: #a7f3d0;
+    }
+
+    /* inner slides layout (stable, like early vol6) */
+    .slide-body { flex: 1; display: flex; flex-direction: column; gap: 0; min-height: 0; overflow: hidden; }
+    .slide-top-copy {
+      position: relative;
+      padding: 44px 18px 18px;
+      text-align: center;
+      color: #0a1211;
+      min-height: 144px;
+    }
+    .slide-top-copy::before {
+      content: "";
+      position: absolute;
+      top: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 26px;
+      height: 3px;
+      border-radius: 999px;
+      background: #3a8a6c;
+    }
+    .slide-top-copy .kicker {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 600;
+      line-height: 1.25;
+      letter-spacing: -0.025em;
+      word-break: keep-all;
+      color: rgba(10, 18, 17, 0.78);
+    }
+    .slide-top-copy .subkicker {
+      display: inline-block;
+      position: relative;
+      margin: 6px 0 0;
+      padding: 0 4px;
+      font-size: 26px;
+      font-weight: 900;
+      line-height: 1.22;
+      letter-spacing: -0.035em;
+      word-break: keep-all;
+      color: #0a1211;
+    }
+    .slide-top-copy .subkicker::after {
+      content: "";
+      position: absolute;
+      left: 6%;
+      right: 6%;
+      bottom: 2px;
+      height: 8px;
+      background: linear-gradient(90deg, rgba(167, 243, 208, 0) 0%, rgba(167, 243, 208, 0.65) 50%, rgba(167, 243, 208, 0) 100%);
+      border-radius: 4px;
+      z-index: -1;
+    }
+
+    .slide-yt-wrap.slide-media-slot {
+      position: relative;
+      width: 100%;
+      margin: 0;
+      aspect-ratio: 16 / 9;
+      background: #ffffff;
+      overflow: hidden;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.08),
+        0 6px 14px -8px rgba(0, 0, 0, 0.18);
+    }
+    .slide-yt-wrap.slide-media-slot::before,
+    .slide-yt-wrap.slide-media-slot::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 14px;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .slide-yt-wrap.slide-media-slot::before {
+      top: 0;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0) 100%);
+    }
+    .slide-yt-wrap.slide-media-slot::after {
+      bottom: 0;
+      background: linear-gradient(0deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0) 100%);
+    }
+    .slide-media-slot > img, .slide-media-slot > video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center; }
+    #hcn-card-2 .slide-media-slot > img { transform: scale(1.06); transform-origin: center; }
+    #hcn-card-6 .slide-yt-wrap.slide-media-slot { background: #faf9f5; }
+
+    .slide-bottom-copy {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px 22px;
+      text-align: center;
+      color: rgba(0, 0, 0, 0.82);
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.6;
+      letter-spacing: -0.018em;
+      word-break: keep-all;
+      overflow: hidden;
+    }
+    .slide-bottom-copy span,
+    .slide-bottom-copy { font-feature-settings: "ss01", "ss02", "case", "tnum"; }
+    .slide-bottom-copy .brand-list {
+      font-size: 0.78em;
+      font-weight: 500;
+      color: rgba(10, 18, 17, 0.5);
+      letter-spacing: -0.005em;
+    }
+
+    .slide-footnote {
+      padding: 4px 22px 10px;
+      text-align: left;
+      color: rgba(10, 18, 17, 0.45);
+      font-size: 10.5px;
+      font-weight: 500;
+      line-height: 1.55;
+      letter-spacing: -0.01em;
+      word-break: keep-all;
+    }
+    .slide-footnote dl { margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+    .slide-footnote .term { font-weight: 700; color: rgba(10, 18, 17, 0.62); margin-right: 4px; }
+    .slide-footnote .item { display: block; }
+
+    .footer {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: auto;
+      padding: 14px 18px;
+      background: linear-gradient(180deg, rgba(12, 55, 52, 0.18) 0%, rgba(12, 55, 52, 0.32) 100%);
+      border-top: none;
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+    }
+    .footer::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 12%;
+      right: 12%;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.55) 50%, rgba(255, 255, 255, 0) 100%);
+    }
+    .footer-logo { width: 26px; height: 26px; flex-shrink: 0; filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.25)); }
+    .footer-logo path { fill: #0a1211; }
+    .footer-text { font-size: 13px; font-weight: 800; color: #0a1211; letter-spacing: 0.18em; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+  <div class="carousel-shell" id="html-cardnews-vol6">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-1" autocomplete="off" checked>
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-2" autocomplete="off">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-3" autocomplete="off">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-4" autocomplete="off">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-5" autocomplete="off">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-6" autocomplete="off">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-7" autocomplete="off">
+
+    <div class="carousel-row">
+      <div class="nav-stack nav-stack--prev">
+        <span class="nav-btn nav-btn--prev nav-prev-disabled is-disabled" aria-hidden="true">←</span>
+        <label class="nav-btn nav-btn--prev nav-prev-from-2" for="hcn-nav-1" aria-label="이전 슬라이드">←</label>
+        <label class="nav-btn nav-btn--prev nav-prev-from-3" for="hcn-nav-2" aria-label="이전 슬라이드">←</label>
+        <label class="nav-btn nav-btn--prev nav-prev-from-4" for="hcn-nav-3" aria-label="이전 슬라이드">←</label>
+        <label class="nav-btn nav-btn--prev nav-prev-from-5" for="hcn-nav-4" aria-label="이전 슬라이드">←</label>
+        <label class="nav-btn nav-btn--prev nav-prev-from-6" for="hcn-nav-5" aria-label="이전 슬라이드">←</label>
+        <label class="nav-btn nav-btn--prev nav-prev-from-7" for="hcn-nav-6" aria-label="이전 슬라이드">←</label>
+      </div>
+
+      <div class="carousel__viewport">
+        <div class="carousel__inner">
+          <div id="deck">
+            <section class="card card--cover" id="hcn-card-1" aria-label="슬라이드 1 표지">
+              <video class="cover-video" autoplay muted loop playsinline preload="auto" disablepictureinpicture aria-hidden="true">
+                <source src="6_1.mp4" type="video/mp4" />
+              </video>
+              <div class="cover-bottom-deco" aria-hidden="true"></div>
+              <div class="card-content card-content--cover">
+                <div class="cover-inner">
+                  <div class="cover-hero-wrap">
+                    <div class="cover-hero">
+                      <span class="cover-badge">VOL.6</span>
+                      <figure class="cover-figure" aria-hidden="true">
+                        <img src="https://kikeun.github.io/KIKEUN/ai54.png" alt="" loading="eager" decoding="async" referrerpolicy="no-referrer-when-downgrade" />
+                      </figure>
+                      <h1 class="cover-headline">
+                        <strong>창작을 위한 AI파트너</strong><br />
+                        <strong class="cover-headline__mark">클로드 커넥터 출시</strong>
+                      </h1>
+                    </div>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-2" aria-label="슬라이드 2">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body">
+                  <div class="slide-top-copy">
+                    <p class="kicker">창작자는 아이디어에 집중하세요</p>
+                    <p class="subkicker">나머지는 Claude가 서포트할게요</p>
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot" aria-hidden="true">
+                    <img src="6_2.png" alt="" loading="eager" decoding="async" />
+                  </div>
+                  <div class="slide-bottom-copy">
+                    <span>
+                      Anthropic은 Blender, Autodesk, Adobe, Ableton,<br />
+                      Splice 등 주요 창작 도구 개발사들과 파트너십을 맺고,<br />
+                      '커넥터(Connectors)'라는 혁신적인 연결 도구를 출시했습니다.<br /><br />
+                      창작 작업에는 Claude 활용하는 방법 5가지와<br />
+                      어떤 앱들을 이용할 수 있는지 지금 확인해 보세요!
+                    </span>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-3" aria-label="슬라이드 3">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body">
+                  <div class="slide-top-copy">
+                    <p class="kicker">비주얼 크레이티브 도구</p>
+                    <p class="subkicker">클로드 '어도비' 커넥터</p>
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot" aria-hidden="true">
+                    <img src="6_3.gif" alt="" loading="eager" decoding="async" />
+                  </div>
+                  <div class="slide-bottom-copy">
+                    <span>
+                      Photoshop, Premiere, Express를 포함한<br />
+                      50개 이상의 Creative Cloud 애플리케이션을 활용하여<br />
+                      이미지, 영상, 디자인 작업을 구현할 수 있습니다.
+                    </span>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-4" aria-label="슬라이드 4">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body">
+                  <div class="slide-top-copy">
+                    <p class="kicker">3D 및 모델링 도구</p>
+                    <p class="subkicker">클로드 '블렌더' 커넥터</p>
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot" aria-hidden="true">
+                    <video autoplay muted loop playsinline preload="auto" disablepictureinpicture>
+                      <source src="6_4.mp4" type="video/mp4" />
+                    </video>
+                  </div>
+                  <div class="slide-bottom-copy">
+                    <span>
+                      Python API에 대한 자연어 인터페이스를 제공하여 복잡한<br />
+                      3D 작업 환경을 쉽게 탐색하고 이해할 수 있도록 돕습니다.
+                    </span>
+                  </div>
+                  <div class="slide-footnote" aria-label="용어 설명">
+                    <dl>
+                      <div class="item"><span class="term">'블렌더'란?</span>3D 모델링, 애니메이션, 영상 제작까지 가능한 모델링 툴</div>
+                      <div class="item"><span class="term">'Python API'란?</span>Python으로 사용할 수 있는 기능/연결 인터페이스</div>
+                    </dl>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-5" aria-label="슬라이드 5">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body">
+                  <div class="slide-top-copy">
+                    <p class="kicker">3D 및 모델링 도구</p>
+                    <p class="subkicker">클로드 '오토데스크' 커넥터</p>
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot" aria-hidden="true">
+                    <video autoplay muted loop playsinline preload="auto" disablepictureinpicture>
+                      <source src="6_5.mp4" type="video/mp4" />
+                    </video>
+                  </div>
+                  <div class="slide-bottom-copy">
+                    <span>
+                      디자이너와 엔지니어가 Claude와의 자연어 대화를<br />
+                      통해 3D 모델을 생성하고 수정할 수 있습니다.
+                    </span>
+                  </div>
+                  <div class="slide-footnote" aria-label="용어 설명">
+                    <dl>
+                      <div class="item"><span class="term">'오토데스크'란?</span>건축, 설계, 엔지니어링, 3D 디자인 소프트웨어</div>
+                    </dl>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-6" aria-label="슬라이드 6">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body">
+                  <div class="slide-top-copy">
+                    <p class="kicker">앞서 소개드린 커넥터를 포함한</p>
+                    <p class="subkicker">클로드의 다양한 커넥터</p>
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot" aria-hidden="true">
+                    <video autoplay muted loop playsinline preload="auto" disablepictureinpicture>
+                      <source src="6_6.mp4" type="video/mp4" />
+                    </video>
+                  </div>
+                  <div class="slide-bottom-copy">
+                    <span>
+                      기존 커넥터에서 새롭게 음악 제작도구<span class="brand-list">(Ableton, Splice)</span>,<br />
+                      비주얼 크레이이티브 도구<span class="brand-list">(Adobe, Affinity by Canva)</span>,<br />
+                      3D 및 모델링 도구<span class="brand-list">(Autodesk Fusion, Blender, SketchUp)</span>,<br />
+                      라이브 퍼모먼스 도구<span class="brand-list">(Resolume Arena &amp; Wire)</span>가 추가되었습니다.
+                    </span>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-7" aria-label="슬라이드 7">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body">
+                  <div class="slide-top-copy">
+                    <p class="kicker">디렉터리에서 검색 후 연결</p>
+                    <p class="subkicker">클로드 커넥터 사용 방법</p>
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot" aria-hidden="true">
+                    <video autoplay muted loop playsinline preload="auto" disablepictureinpicture>
+                      <source src="6_7.mp4" type="video/mp4" />
+                    </video>
+                  </div>
+                  <div class="slide-bottom-copy">
+                    1. 좌측 사이드바 [사용자 지정] 클릭<br />
+                    2. Claude 맞춤설정의 [앱 연결] 클릭<br />
+                    3. [원하는 커넥터] 검색 후 [연결] 완료
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-stack nav-stack--next">
+        <label class="nav-btn nav-btn--next nav-next-from-1" for="hcn-nav-2" aria-label="다음 슬라이드">→</label>
+        <label class="nav-btn nav-btn--next nav-next-from-2" for="hcn-nav-3" aria-label="다음 슬라이드">→</label>
+        <label class="nav-btn nav-btn--next nav-next-from-3" for="hcn-nav-4" aria-label="다음 슬라이드">→</label>
+        <label class="nav-btn nav-btn--next nav-next-from-4" for="hcn-nav-5" aria-label="다음 슬라이드">→</label>
+        <label class="nav-btn nav-btn--next nav-next-from-5" for="hcn-nav-6" aria-label="다음 슬라이드">→</label>
+        <label class="nav-btn nav-btn--next nav-next-from-6" for="hcn-nav-7" aria-label="다음 슬라이드">→</label>
+        <span class="nav-btn nav-btn--next nav-next-disabled is-disabled" aria-hidden="true">→</span>
+      </div>
+    </div>
+
+    <div class="progress-dots" aria-hidden="true">
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      function ensureInitialChecked() {
+        var checked = document.querySelector('input[name="hcn-nav"]:checked');
+        if (!checked) {
+          var first = document.getElementById('hcn-nav-1');
+          if (first) first.checked = true;
+        }
+      }
+      ensureInitialChecked();
+      window.addEventListener('pageshow', ensureInitialChecked);
+
+      var VIDEO_SLIDES = [
+        { navId: "hcn-nav-1", sel: "#hcn-card-1 .cover-video" },
+        { navId: "hcn-nav-4", sel: "#hcn-card-4 .slide-media-slot video" },
+        { navId: "hcn-nav-5", sel: "#hcn-card-5 .slide-media-slot video" },
+        { navId: "hcn-nav-6", sel: "#hcn-card-6 .slide-media-slot video" },
+        { navId: "hcn-nav-7", sel: "#hcn-card-7 .slide-media-slot video" }
+      ];
+
+      var videoSlides = VIDEO_SLIDES.map(function (def) {
+        var video = document.querySelector(def.sel);
+        return video ? { navId: def.navId, video: video } : null;
+      }).filter(Boolean);
+
+      function pauseAllVideos() {
+        videoSlides.forEach(function (x) {
+          try { x.video.pause(); } catch (err) {}
+        });
+      }
+
+      function playActiveSlideFromStart() {
+        var nav = document.querySelector('input[name="hcn-nav"]:checked');
+        if (!nav) return;
+        videoSlides.forEach(function (x) {
+          if (x.navId !== nav.id) return;
+          var v = x.video;
+          try { v.muted = true; v.currentTime = 0; } catch (err) {}
+          try { v.load(); } catch (err) {}
+          try {
+            var p = v.play();
+            if (p && typeof p.catch === "function") p.catch(function () {});
+          } catch (err) {}
+        });
+      }
+
+      function onNavChange() {
+        pauseAllVideos();
+        window.setTimeout(playActiveSlideFromStart, 80);
+      }
+
+      document.querySelectorAll('input[name="hcn-nav"]').forEach(function (r) {
+        r.addEventListener("change", onNavChange);
+      });
+
+      onNavChange();
+    })();
+  </script>
+</body>
+</html>

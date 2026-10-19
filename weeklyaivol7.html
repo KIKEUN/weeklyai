@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <title>Weekly AI (VOL.7)</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/static/pretendard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --font-sans: Pretendard, "Noto Sans KR", "Malgun Gothic", system-ui, -apple-system, "Segoe UI", sans-serif;
+      --font-cover-headline-min: 1.85rem;
+      --font-cover-headline-vw: 4.8vw;
+      --font-cover-headline-max: 2.45rem;
+      --font-cover-headline-mark-em: 1.42;
+    }
+    html { overflow-x: hidden; }
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background: #ffffff;
+      font-family: var(--font-sans);
+    }
+
+    .carousel-shell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      padding: 48px 16px 64px;
+      gap: 14px;
+    }
+
+    .carousel-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      width: 100%;
+      max-width: 700px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .carousel__viewport {
+      flex: 0 1 540px;
+      min-width: 0;
+      width: 540px;
+      max-width: 540px;
+      overflow: hidden;
+      border-radius: 20px;
+      position: relative;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      touch-action: pan-y;
+      background: transparent;
+      transform-origin: top center;
+      -webkit-transform-origin: top center;
+    }
+
+    .carousel__inner {
+      width: 540px;
+      height: 720px;
+      overflow: hidden;
+      border-radius: 20px;
+      position: relative;
+    }
+
+    @media (max-width: 600px) {
+      .carousel__viewport { height: 612px; transform: scale(0.85); -webkit-transform: scale(0.85); }
+      @supports (zoom: 0.85) {
+        .carousel__viewport { transform: none; -webkit-transform: none; zoom: 0.85; }
+      }
+    }
+    @media (max-width: 520px) {
+      .carousel__viewport { height: 540px; transform: scale(0.75); -webkit-transform: scale(0.75); }
+      @supports (zoom: 0.75) {
+        .carousel__viewport { transform: none; -webkit-transform: none; zoom: 0.75; }
+      }
+    }
+    @media (max-width: 460px) {
+      .carousel__viewport { height: 468px; transform: scale(0.65); -webkit-transform: scale(0.65); }
+      @supports (zoom: 0.65) {
+        .carousel__viewport { transform: none; -webkit-transform: none; zoom: 0.65; }
+      }
+    }
+    @media (max-width: 400px) {
+      .carousel__viewport { height: 396px; transform: scale(0.55); -webkit-transform: scale(0.55); }
+      @supports (zoom: 0.55) {
+        .carousel__viewport { transform: none; -webkit-transform: none; zoom: 0.55; }
+      }
+    }
+
+    #deck {
+      position: relative !important;
+      width: 540px !important;
+      height: 720px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: block !important;
+    }
+    #deck > .card {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      margin: 0 !important;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.32s ease, visibility 0s linear 0.32s;
+      pointer-events: none;
+    }
+
+    .wai-nav {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+
+    #hcn-nav-1:checked ~ .carousel-row #hcn-card-1,
+    #hcn-nav-2:checked ~ .carousel-row #hcn-card-2,
+    #hcn-nav-3:checked ~ .carousel-row #hcn-card-3,
+    #hcn-nav-4:checked ~ .carousel-row #hcn-card-4,
+    #hcn-nav-5:checked ~ .carousel-row #hcn-card-5,
+    #hcn-nav-6:checked ~ .carousel-row #hcn-card-6,
+    #hcn-nav-7:checked ~ .carousel-row #hcn-card-7 {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      z-index: 2;
+      transition: opacity 0.32s ease, visibility 0s linear 0s;
+    }
+
+    .nav-stack { position: relative; width: 44px; height: 44px; flex-shrink: 0; align-self: center; }
+    .nav-stack > .nav-btn { position: absolute; top: 0; left: 0; display: none; }
+
+    #hcn-nav-2:checked ~ .carousel-row .nav-prev-from-2 { display: inline-flex; }
+    #hcn-nav-3:checked ~ .carousel-row .nav-prev-from-3 { display: inline-flex; }
+    #hcn-nav-4:checked ~ .carousel-row .nav-prev-from-4 { display: inline-flex; }
+    #hcn-nav-5:checked ~ .carousel-row .nav-prev-from-5 { display: inline-flex; }
+    #hcn-nav-6:checked ~ .carousel-row .nav-prev-from-6 { display: inline-flex; }
+    #hcn-nav-7:checked ~ .carousel-row .nav-prev-from-7 { display: inline-flex; }
+    #hcn-nav-1:checked ~ .carousel-row .nav-prev-disabled { display: inline-flex; }
+
+    #hcn-nav-1:checked ~ .carousel-row .nav-next-from-1 { display: inline-flex; }
+    #hcn-nav-2:checked ~ .carousel-row .nav-next-from-2 { display: inline-flex; }
+    #hcn-nav-3:checked ~ .carousel-row .nav-next-from-3 { display: inline-flex; }
+    #hcn-nav-4:checked ~ .carousel-row .nav-next-from-4 { display: inline-flex; }
+    #hcn-nav-5:checked ~ .carousel-row .nav-next-from-5 { display: inline-flex; }
+    #hcn-nav-6:checked ~ .carousel-row .nav-next-from-6 { display: inline-flex; }
+    #hcn-nav-7:checked ~ .carousel-row .nav-next-disabled { display: inline-flex; }
+
+    .nav-btn.is-disabled { opacity: 0.32; cursor: not-allowed; pointer-events: none; }
+    .nav-btn {
+      flex-shrink: 0;
+      align-self: center;
+      position: relative;
+      z-index: 10;
+      width: 46px;
+      height: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: 1px solid rgba(10, 90, 80, 0.16);
+      background: linear-gradient(180deg, #ffffff 0%, #f4f4f1 100%);
+      color: #0a3a36;
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      box-shadow:
+        0 6px 16px -8px rgba(8, 40, 38, 0.28),
+        0 1px 0 rgba(255, 255, 255, 0.9) inset;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+    .nav-btn:hover:not(.is-disabled) {
+      background: linear-gradient(180deg, #ffffff 0%, #ecf3ec 100%);
+      transform: translateY(-1px);
+      box-shadow:
+        0 10px 22px -10px rgba(8, 40, 38, 0.36),
+        0 1px 0 rgba(255, 255, 255, 0.9) inset;
+    }
+    .nav-btn:active:not(.is-disabled) { transform: translateY(0); }
+
+    .progress-dots {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .progress-dots .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(10, 58, 54, 0.18);
+      transition: width 0.32s ease, background 0.32s ease, opacity 0.32s ease;
+    }
+    #hcn-nav-1:checked ~ .progress-dots .dot:nth-child(1),
+    #hcn-nav-2:checked ~ .progress-dots .dot:nth-child(2),
+    #hcn-nav-3:checked ~ .progress-dots .dot:nth-child(3),
+    #hcn-nav-4:checked ~ .progress-dots .dot:nth-child(4),
+    #hcn-nav-5:checked ~ .progress-dots .dot:nth-child(5),
+    #hcn-nav-6:checked ~ .progress-dots .dot:nth-child(6),
+    #hcn-nav-7:checked ~ .progress-dots .dot:nth-child(7) {
+      width: 22px;
+      background: linear-gradient(90deg, #0a4a48 0%, #1a8888 100%);
+    }
+
+    .card {
+      width: 540px;
+      height: 720px;
+      aspect-ratio: 3 / 4;
+      position: relative;
+      overflow: hidden;
+      border-radius: 22px;
+      box-shadow:
+        0 30px 60px -20px rgba(8, 40, 38, 0.55),
+        0 12px 24px -8px rgba(0, 0, 0, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      flex-shrink: 0;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      isolation: isolate;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 3;
+      border-radius: inherit;
+      background:
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.06 0'/></filter><rect width='180' height='180' filter='url(%23n)'/></svg>");
+      mix-blend-mode: overlay;
+      opacity: 0.5;
+    }
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 4;
+      border-radius: inherit;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 0 60px rgba(0, 30, 30, 0.18);
+    }
+
+    .card-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 20%, #d4e8a0 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 15%, #a8e6c1 0%, transparent 45%),
+        radial-gradient(ellipse at 50% 50%, #5ccfb1 0%, transparent 55%),
+        radial-gradient(ellipse at 30% 70%, #3cc4a7 0%, transparent 50%),
+        radial-gradient(ellipse at 75% 80%, #1a8f8f 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 95%, #0d6b6e 0%, transparent 50%),
+        linear-gradient(180deg, #c8e6a0 0%, #4dc9a0 40%, #1a8888 80%, #0a5a5e 100%);
+      z-index: 0;
+    }
+
+    .card-bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 120% 80% at 50% -20%, rgba(255,255,255,0.35) 0%, transparent 55%),
+        radial-gradient(ellipse 90% 60% at 100% 100%, rgba(0,30,40,0.18) 0%, transparent 50%),
+        radial-gradient(ellipse 70% 50% at 0% 100%, rgba(0,40,35,0.12) 0%, transparent 45%);
+    }
+
+    .card-content {
+      position: relative;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      padding: 32px 28px;
+    }
+
+    .card-content--inner { padding: 0; }
+    .card--cover .card-content--cover { padding: 0; display: flex; flex-direction: column; min-height: 0; height: 100%; }
+
+    /* 2p~9p: vol6-style green card atmosphere */
+    #deck > .card:not(.card--cover) {
+      background: transparent;
+    }
+    #deck > .card:not(.card--cover) .card-bg {
+      display: block;
+    }
+    #deck > .card:not(.card--cover) .card-content--inner {
+      background: transparent;
+    }
+    #deck > .card:not(.card--cover) .slide-top-copy {
+      background: linear-gradient(
+        180deg,
+        rgba(212, 232, 160, 0.55) 0%,
+        rgba(168, 230, 193, 0.28) 45%,
+        transparent 100%
+      );
+    }
+    #deck > .card:not(.card--cover) .slide-bottom-copy {
+      background: linear-gradient(
+        0deg,
+        rgba(13, 107, 110, 0.14) 0%,
+        rgba(92, 207, 177, 0.1) 55%,
+        transparent 100%
+      );
+    }
+    #deck > .card:not(.card--cover) .footer-logo path {
+      fill: #0a1211;
+    }
+    #deck > .card:not(.card--cover) .footer-text {
+      color: #0a1211;
+    }
+    /* 1p cover: green bg like p2 + ai40 fade + title at bottom */
+    #hcn-card-1 { background: transparent; }
+    #hcn-card-1 .card-bg { display: block; }
+    #hcn-card-1 .cover-visual {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    #hcn-card-1 .cover-visual__base {
+      display: block;
+      width: 59%;
+      height: 59%;
+      max-width: 59%;
+      max-height: 59%;
+      object-fit: contain;
+      object-position: center center;
+      -webkit-mask-image: linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(0, 0, 0, 0.12) 6%,
+        rgba(0, 0, 0, 0.45) 14%,
+        #000 26%,
+        #000 74%,
+        rgba(0, 0, 0, 0.45) 86%,
+        rgba(0, 0, 0, 0.12) 94%,
+        transparent 100%
+      );
+      mask-image: linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(0, 0, 0, 0.12) 6%,
+        rgba(0, 0, 0, 0.45) 14%,
+        #000 26%,
+        #000 74%,
+        rgba(0, 0, 0, 0.45) 86%,
+        rgba(0, 0, 0, 0.12) 94%,
+        transparent 100%
+      );
+    }
+    #hcn-card-1 .cover-visual__overlay {
+      position: absolute;
+      top: 16%;
+      left: 50%;
+      z-index: 2;
+      display: block;
+      width: 86%;
+      height: 86%;
+      max-width: 86%;
+      max-height: 86%;
+      object-fit: contain;
+      object-position: center center;
+      transform: translate(-50%, -50%);
+    }
+    #hcn-card-1 .cover-bottom-deco {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 28%;
+      bottom: 54px;
+      z-index: 2;
+      pointer-events: none;
+      background: linear-gradient(
+        180deg,
+        rgba(200, 232, 160, 0) 0%,
+        rgba(168, 230, 193, 0.18) 28%,
+        rgba(77, 201, 160, 0.42) 52%,
+        rgba(26, 136, 136, 0.65) 76%,
+        rgba(10, 90, 94, 0.82) 100%
+      );
+    }
+    #hcn-card-1 .card-content--cover { position: relative; z-index: 3; }
+    #hcn-card-1 .cover-inner {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: 0;
+      gap: 14px;
+      padding: 0 24px 8px;
+    }
+    #hcn-card-1 .footer {
+      position: relative;
+      z-index: 1;
+      flex-shrink: 0;
+      width: 100%;
+      margin-top: auto;
+      padding: 14px 18px;
+      background: linear-gradient(180deg, rgba(12, 55, 52, 0.18) 0%, rgba(12, 55, 52, 0.32) 100%);
+      border-top: none;
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+    }
+    #hcn-card-1 .footer::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 12%;
+      right: 12%;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.55) 50%, rgba(255, 255, 255, 0) 100%);
+    }
+    #hcn-card-1 .footer-logo path { fill: #0a1211; }
+    #hcn-card-1 .footer-text { color: #0a1211; }
+    #hcn-card-1 .cover-hero-wrap {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding-bottom: 6px;
+    }
+    .cover-badge {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px 9px 14px;
+      margin-bottom: 12px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #0a3a36;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(212, 232, 160, 0.78) 100%);
+      border: 1px solid rgba(58, 138, 108, 0.32);
+      border-radius: 999px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    }
+    .cover-badge::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #a7f3d0;
+      box-shadow: 0 0 8px rgba(167, 243, 208, 0.95);
+      animation: pulseDot 2.2s ease-in-out infinite;
+    }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.55; transform: scale(0.85); }
+    }
+    .cover-headline {
+      margin: 0;
+      font-size: clamp(var(--font-cover-headline-min), var(--font-cover-headline-vw), var(--font-cover-headline-max));
+      font-weight: 900;
+      line-height: 1.18;
+      letter-spacing: -0.045em;
+      color: #0a1211;
+      text-shadow: none;
+    }
+    .cover-headline__mark {
+      font-size: calc(1em * var(--font-cover-headline-mark-em));
+      background: none;
+      -webkit-background-clip: unset;
+      background-clip: unset;
+      -webkit-text-fill-color: #ffffff;
+      color: #ffffff;
+      text-shadow: 0 2px 16px rgba(0, 0, 0, 0.28);
+    }
+
+    .slide-body { flex: 1; display: flex; flex-direction: column; gap: 0; min-height: 0; overflow: hidden; }
+    .slide-top-copy {
+      position: relative;
+      padding: 44px 18px 18px;
+      text-align: center;
+      color: #0a1211;
+      min-height: 144px;
+    }
+    .slide-top-copy::before {
+      content: "";
+      position: absolute;
+      top: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 26px;
+      height: 3px;
+      border-radius: 999px;
+      background: #3a8a6c;
+    }
+    .slide-top-copy .kicker {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 600;
+      line-height: 1.25;
+      letter-spacing: -0.025em;
+      word-break: keep-all;
+      color: rgba(10, 18, 17, 0.78);
+    }
+    .slide-top-copy .subkicker {
+      display: inline-block;
+      position: relative;
+      margin: 6px 0 0;
+      padding: 0 4px;
+      font-size: 32px;
+      font-weight: 900;
+      line-height: 1.22;
+      letter-spacing: -0.035em;
+      word-break: keep-all;
+      color: #0a1211;
+    }
+    .slide-top-copy .subkicker::after {
+      content: "";
+      position: absolute;
+      left: 6%;
+      right: 6%;
+      bottom: 2px;
+      height: 8px;
+      background: linear-gradient(90deg, rgba(167, 243, 208, 0) 0%, rgba(167, 243, 208, 0.65) 50%, rgba(167, 243, 208, 0) 100%);
+      border-radius: 4px;
+      z-index: -1;
+    }
+
+    .slide-yt-wrap.slide-media-slot {
+      position: relative;
+      width: 100%;
+      margin: 0;
+      aspect-ratio: 16 / 9;
+      background: #ffffff;
+      overflow: hidden;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.08),
+        0 6px 14px -8px rgba(0, 0, 0, 0.18);
+    }
+    .slide-yt-wrap.slide-media-slot::before,
+    .slide-yt-wrap.slide-media-slot::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 14px;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .slide-yt-wrap.slide-media-slot::before {
+      top: 0;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0) 100%);
+    }
+    .slide-yt-wrap.slide-media-slot::after {
+      bottom: 0;
+      background: linear-gradient(0deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0) 100%);
+    }
+    .slide-media-slot > img,
+    .slide-media-slot > video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 200%;
+      object-fit: cover;
+      object-position: top center;
+    }
+    .slide-media-slot--empty {
+      background: rgba(255, 255, 255, 0.72);
+    }
+    /* 6~7p: 이미지 비율에 맞춰 박스 높이 자동, 로드 전 흰색 플레이스홀더 */
+    #hcn-card-6 .slide-media-slot,
+    #hcn-card-7 .slide-media-slot {
+      flex: 0 0 auto;
+      aspect-ratio: unset;
+      height: auto;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow: none;
+      min-height: 280px;
+    }
+    #hcn-card-6 .slide-media-slot.is-media-loaded,
+    #hcn-card-7 .slide-media-slot.is-media-loaded {
+      min-height: 0;
+    }
+    #hcn-card-6 .slide-media-slot::before,
+    #hcn-card-6 .slide-media-slot::after,
+    #hcn-card-7 .slide-media-slot::before,
+    #hcn-card-7 .slide-media-slot::after {
+      display: none;
+    }
+    #hcn-card-6 .slide-media-slot > img,
+    #hcn-card-7 .slide-media-slot > img {
+      position: static;
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    #hcn-card-6 .slide-body,
+    #hcn-card-7 .slide-body {
+      min-height: 0;
+    }
+    #deck > #hcn-card-6 .footer,
+    #deck > #hcn-card-7 .footer {
+      margin-top: 0;
+      padding-top: 12px;
+      background: linear-gradient(
+        180deg,
+        rgba(92, 207, 177, 0.06) 0%,
+        rgba(26, 136, 136, 0.12) 28%,
+        rgba(12, 55, 52, 0.24) 100%
+      );
+    }
+    #deck > #hcn-card-6 .footer::before,
+    #deck > #hcn-card-7 .footer::before {
+      display: none;
+    }
+    .typing-result {
+      opacity: 0;
+      transform: scale(0.98);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+    .typing-result.is-visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .slide-bottom-copy {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      padding: 38px 18px 12px;
+      text-align: left;
+      color: rgba(0, 0, 0, 0.82);
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.28;
+      letter-spacing: -0.01em;
+      word-break: normal;
+      overflow-wrap: anywhere;
+      overflow: hidden;
+    }
+    .slide-bottom-copy::before {
+      content: "프롬프트";
+      position: absolute;
+      top: 14px;
+      left: 18px;
+      color: #0a3a36;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+    .slide-bottom-copy span,
+    .slide-bottom-copy { font-feature-settings: "ss01", "ss02", "case", "tnum"; }
+    .slide-bottom-copy.prompt-copy {
+      flex-direction: column;
+      gap: 8px;
+      padding: 16px 18px 10px;
+    }
+    .slide-bottom-copy.prompt-copy::before {
+      content: none;
+    }
+    .prompt-heading {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      align-self: flex-start;
+      color: #0a3a36;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      margin-bottom: 5px;
+    }
+    .copy-btn {
+      position: relative;
+      width: 18px;
+      height: 18px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: #0a3a36;
+      font-family: var(--font-sans);
+      font-size: 0;
+      cursor: pointer;
+      opacity: 0.72;
+      transition: opacity 0.18s ease, transform 0.18s ease, color 0.18s ease;
+    }
+    .copy-btn::before,
+    .copy-btn::after {
+      content: "";
+      position: absolute;
+      width: 8px;
+      height: 10px;
+      border: 1.5px solid currentColor;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.55);
+    }
+    .copy-btn::before {
+      top: 5px;
+      left: 4px;
+      opacity: 0.55;
+    }
+    .copy-btn::after {
+      top: 3px;
+      left: 7px;
+    }
+    .copy-btn:hover {
+      opacity: 1;
+      transform: translateY(-1px);
+    }
+    .copy-btn.is-copied {
+      color: #1a8888;
+      border-color: rgba(26, 136, 136, 0.35);
+      background: rgba(236, 253, 245, 0.95);
+    }
+    .prompt-summary {
+      color: #0a1211;
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1.25;
+      letter-spacing: -0.03em;
+    }
+    .copy-source {
+      display: block;
+      color: rgba(0, 0, 0, 0.78);
+      font-size: 10px;
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      padding: 10px 12px;
+      border: 1px solid rgba(10, 58, 54, 0.1);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.72);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    }
+    .copy-source .prompt-heading {
+      display: inline-flex;
+    }
+    .copy-source__text {
+      display: block;
+      padding-top: 7px;
+      border-top: 1px solid rgba(10, 58, 54, 0.12);
+    }
+    #deck > #hcn-card-6 .slide-bottom-copy,
+    #deck > #hcn-card-7 .slide-bottom-copy {
+      flex: 1 1 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+      padding: 12px 18px;
+      background: transparent;
+    }
+    #deck > #hcn-card-6 .slide-bottom-copy .typing-box,
+    #deck > #hcn-card-7 .slide-bottom-copy .typing-box {
+      width: 100%;
+      max-width: 100%;
+    }
+    #hcn-card-6 .slide-bottom-copy::before,
+    #hcn-card-7 .slide-bottom-copy::before {
+      content: none;
+    }
+    #hcn-card-6 .slide-top-copy,
+    #hcn-card-7 .slide-top-copy {
+      flex: 0 0 auto;
+      min-height: 0;
+      padding-bottom: 12px;
+    }
+    .typing-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      min-height: 56px;
+      padding: 0 18px 0 20px;
+      border: 1px solid rgba(10, 58, 54, 0.18);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow:
+        0 14px 32px -22px rgba(8, 40, 38, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    }
+    .typing-box::before {
+      content: "";
+      width: 15px;
+      height: 15px;
+      flex: 0 0 auto;
+      border: 2px solid rgba(10, 58, 54, 0.42);
+      border-radius: 50%;
+      box-shadow: 8px 8px 0 -6px rgba(10, 58, 54, 0.42);
+    }
+    .typing-prompt {
+      display: inline-block;
+      max-width: 100%;
+      min-height: 1.45em;
+      white-space: nowrap;
+      border-right: 2px solid #0a3a36;
+      color: #0a1211;
+      font-size: 17px;
+      font-weight: 800;
+      line-height: 1.45;
+      animation: typingCursor 0.85s step-end infinite;
+    }
+    @keyframes typingCursor {
+      50% { border-color: transparent; }
+    }
+
+    .footer {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: auto;
+      padding: 14px 18px;
+      background: linear-gradient(180deg, rgba(12, 55, 52, 0.18) 0%, rgba(12, 55, 52, 0.32) 100%);
+      border-top: none;
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+    }
+    .footer::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 12%;
+      right: 12%;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.55) 50%, rgba(255, 255, 255, 0) 100%);
+    }
+    .footer-logo { width: 26px; height: 26px; flex-shrink: 0; filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.25)); }
+    .footer-logo path { fill: #0a1211; }
+    .footer-text { font-size: 13px; font-weight: 800; color: #0a1211; letter-spacing: 0.18em; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+  <div class="carousel-shell" id="html-cardnews-vol7">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-1" autocomplete="off" checked>
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-2" autocomplete="off">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-3" autocomplete="off">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-4" autocomplete="off">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-5" autocomplete="off">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-6" autocomplete="off">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-7" autocomplete="off">
+
+    <div class="carousel-row">
+      <div class="nav-stack nav-stack--prev">
+        <span class="nav-btn nav-btn--prev nav-prev-disabled is-disabled" aria-hidden="true">←</span>
+        <label class="nav-btn nav-btn--prev nav-prev-from-2" for="hcn-nav-1" aria-label="이전 슬라이드">←</label>
+        <label class="nav-btn nav-btn--prev nav-prev-from-3" for="hcn-nav-2" aria-label="이전 슬라이드">←</label>
+        <label class="nav-btn nav-btn--prev nav-prev-from-4" for="hcn-nav-3" aria-label="이전 슬라이드">←</label>
+        <label class="nav-btn nav-btn--prev nav-prev-from-5" for="hcn-nav-4" aria-label="이전 슬라이드">←</label>
+        <label class="nav-btn nav-btn--prev nav-prev-from-6" for="hcn-nav-5" aria-label="이전 슬라이드">←</label>
+        <label class="nav-btn nav-btn--prev nav-prev-from-7" for="hcn-nav-6" aria-label="이전 슬라이드">←</label>
+      </div>
+
+      <div class="carousel__viewport">
+        <div class="carousel__inner">
+          <div id="deck">
+            <section class="card card--cover" id="hcn-card-1" aria-label="슬라이드 1 표지">
+              <div class="card-bg"></div>
+              <div class="cover-visual" aria-hidden="true">
+                <img class="cover-visual__base" src="https://kikeun.github.io/weeklyai/ai40.webp" alt="" loading="eager" decoding="async" referrerpolicy="no-referrer-when-downgrade" />
+                <img class="cover-visual__overlay" src="https://kikeun.github.io/KIKEUN/ai54.png" alt="" loading="eager" decoding="async" referrerpolicy="no-referrer-when-downgrade" />
+              </div>
+              <div class="cover-bottom-deco" aria-hidden="true"></div>
+              <div class="card-content card-content--cover">
+                <div class="cover-inner">
+                  <div class="cover-hero-wrap">
+                    <div class="cover-hero">
+                      <span class="cover-badge">VOL.7</span>
+                      <h1 class="cover-headline">
+                        <strong class="cover-headline__mark">GPT Image 2</strong><br />
+                        <strong>활용 가이드</strong>
+                      </h1>
+                    </div>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-2" aria-label="슬라이드 2">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body">
+                  <div class="slide-top-copy">
+                    <p class="kicker">GPT Image 2</p>
+                    <p class="subkicker">저화질 복구</p>
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot" aria-hidden="true">
+                    <img src="https://kikeun.github.io/weeklyai/ai41.png" alt="" loading="eager" decoding="async" />
+                  </div>
+                  <div class="slide-bottom-copy prompt-copy">
+                    <span class="prompt-summary">저화질 이미지를 원본 느낌 그대로 선명하게 복구합니다.</span>
+                    <span class="copy-source"><span class="prompt-heading"><span>프롬프트</span><button class="copy-btn" type="button" aria-label="프롬프트 복사"></button></span><span class="copy-source__text">Ultra high-resolution restoration of the uploaded image while preserving the exact identity, pose, framing, composition, and lighting. Recover realistic facial details, hair strands, skin texture, clothing texture, and background detail naturally without hallucinating new features. Remove compression artifacts, blur, digital noise, and low-resolution softness while keeping the image photorealistic and true to the original. Maintain original colors and lighting direction exactly. No AI-generated look, no beauty filter, no over-sharpening, no fake details. Professional realistic 4K enhancement with natural texture preservation.</span></span>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-3" aria-label="슬라이드 3">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body">
+                  <div class="slide-top-copy">
+                    <p class="kicker">GPT Image 2</p>
+                    <p class="subkicker">배경 사람 제거</p>
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot" aria-hidden="true">
+                    <img src="https://kikeun.github.io/weeklyai/ai42.png" alt="" loading="eager" decoding="async" />
+                  </div>
+                  <div class="slide-bottom-copy prompt-copy">
+                    <span class="prompt-summary">주인공은 유지하고 배경 사람만 자연스럽게 제거합니다.</span>
+                    <span class="copy-source"><span class="prompt-heading"><span>프롬프트</span><button class="copy-btn" type="button" aria-label="프롬프트 복사"></button></span><span class="copy-source__text">Remove all unwanted people from the background while perfectly preserving the main subject, clothing, facial features, pose, and lighting. Reconstruct the background naturally where the removed people were located. Match realistic perspective, lighting direction, shadows, textures, architecture, and depth. Do not crop or stylize the image. The result should look like the original photo was taken without people in the background.</span></span>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-4" aria-label="슬라이드 4">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body">
+                  <div class="slide-top-copy">
+                    <p class="kicker">GPT Image 2</p>
+                    <p class="subkicker">어두운 사진 살리기</p>
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot" aria-hidden="true">
+                    <img src="https://kikeun.github.io/weeklyai/ai46.png" alt="" loading="eager" decoding="async" />
+                  </div>
+                  <div class="slide-bottom-copy prompt-copy">
+                    <span class="prompt-summary">어두운 사진을 자연스럽게 밝히고 분위기는 유지합니다.</span>
+                    <span class="copy-source"><span class="prompt-heading"><span>프롬프트</span><button class="copy-btn" type="button" aria-label="프롬프트 복사"></button></span><span class="copy-source__text">Correct the poor low-light exposure while preserving the person's real identity, skin texture, expression, pose, and image atmosphere. Brighten underexposed areas naturally while maintaining realistic shadows and contrast. Correct harsh flash shadows and remove unnatural color casts. Preserve realistic skin texture, hair detail, and background lighting. Do not create an AI-generated beauty look or artificial smoothing. The final image should look like a naturally well-exposed night photo captured with professional lighting.</span></span>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-5" aria-label="슬라이드 5">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body">
+                  <div class="slide-top-copy">
+                    <p class="kicker">GPT Image 2</p>
+                    <p class="subkicker">오래된 사진 복원</p>
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot" aria-hidden="true">
+                    <img src="https://kikeun.github.io/weeklyai/ai47.png" alt="" loading="eager" decoding="async" />
+                  </div>
+                  <div class="slide-bottom-copy prompt-copy">
+                    <span class="prompt-summary">오래된 손상 사진을 빈티지 감성은 살려 복원합니다.</span>
+                    <span class="copy-source"><span class="prompt-heading"><span>프롬프트</span><button class="copy-btn" type="button" aria-label="프롬프트 복사"></button></span><span class="copy-source__text">Restore and repair the old damaged photograph while preserving the person's real facial identity and historical authenticity. Repair scratches, folds, tears, fading, blur, stains, and damaged areas naturally. Enhance facial details, clothing texture, and image clarity while maintaining realistic vintage photographic texture. If appropriate, restore natural realistic color while respecting the original era and lighting. Preserve the nostalgic atmosphere and authentic photographic character. Photorealistic restoration with subtle high-resolution enhancement.</span></span>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-6" aria-label="슬라이드 6">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body">
+                  <div class="slide-top-copy">
+                    <p class="kicker">GPT Image 2</p>
+                    <p class="subkicker">간단한 프롬프트로 IMAGE 생성하기</p>
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot slide-media-slot--empty" aria-hidden="true">
+                    <img class="typing-result" src="https://kikeun.github.io/weeklyai/ai44.png" alt="" loading="eager" decoding="async" />
+                  </div>
+                  <div class="slide-bottom-copy">
+                    <span class="typing-box"><span class="typing-prompt" data-text="여자 아이돌을 모델로 한 디에이치 광고 이미지 만들어줘"></span></span>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-7" aria-label="슬라이드 7">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body">
+                  <div class="slide-top-copy">
+                    <p class="kicker">GPT Image 2</p>
+                    <p class="subkicker">간단한 프롬프트로 IMAGE 생성하기</p>
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot slide-media-slot--empty" aria-hidden="true">
+                    <img class="typing-result" src="https://kikeun.github.io/weeklyai/ai45.png" alt="" loading="eager" decoding="async" />
+                  </div>
+                  <div class="slide-bottom-copy">
+                    <span class="typing-box"><span class="typing-prompt" data-text="남자 아이돌을 모델로 한 현대건설 광고 이미지 만들어줘"></span></span>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-8" aria-label="슬라이드 8">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body">
+                  <div class="slide-top-copy">
+                    <p class="kicker">GPT Image 2</p>
+                    <p class="subkicker">간단한 프롬프트로 IMAGE 생성하기</p>
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot slide-media-slot--empty" aria-hidden="true">
+                    <img class="typing-result" src="https://kikeun.github.io/weeklyai/ai51.png" alt="" loading="eager" decoding="async" />
+                  </div>
+                  <div class="slide-bottom-copy">
+                    <span class="typing-box"><span class="typing-prompt" data-text="2000년 대 가족사진 이미지 만들어줘"></span></span>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-stack nav-stack--next">
+        <label class="nav-btn nav-btn--next nav-next-from-1" for="hcn-nav-2" aria-label="다음 슬라이드">→</label>
+        <label class="nav-btn nav-btn--next nav-next-from-2" for="hcn-nav-3" aria-label="다음 슬라이드">→</label>
+        <label class="nav-btn nav-btn--next nav-next-from-3" for="hcn-nav-4" aria-label="다음 슬라이드">→</label>
+        <label class="nav-btn nav-btn--next nav-next-from-4" for="hcn-nav-5" aria-label="다음 슬라이드">→</label>
+        <label class="nav-btn nav-btn--next nav-next-from-5" for="hcn-nav-6" aria-label="다음 슬라이드">→</label>
+        <label class="nav-btn nav-btn--next nav-next-from-6" for="hcn-nav-7" aria-label="다음 슬라이드">→</label>
+        <span class="nav-btn nav-btn--next nav-next-disabled is-disabled" aria-hidden="true">→</span>
+      </div>
+    </div>
+
+    <div class="progress-dots" aria-hidden="true">
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      function ensureInitialChecked() {
+        var checked = document.querySelector('input[name="hcn-nav"]:checked');
+        if (!checked) {
+          var first = document.getElementById('hcn-nav-1');
+          if (first) first.checked = true;
+        }
+      }
+      ensureInitialChecked();
+      window.addEventListener('pageshow', ensureInitialChecked);
+      var coverVideo = document.querySelector('#hcn-card-1 .cover-video');
+      function pauseCoverVideo() {
+        if (!coverVideo) return;
+        try { coverVideo.pause(); } catch (err) {}
+      }
+      function playCoverVideoFromStart() {
+        if (!coverVideo || !coverVideo.querySelector('source')) return;
+        try { coverVideo.muted = true; coverVideo.currentTime = 0; } catch (err) {}
+        try { coverVideo.load(); } catch (err) {}
+        try {
+          var p = coverVideo.play();
+          if (p && typeof p.catch === 'function') p.catch(function () {});
+        } catch (err) {}
+      }
+      function copyText(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          return navigator.clipboard.writeText(text);
+        }
+        var textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try { document.execCommand('copy'); } catch (err) {}
+        document.body.removeChild(textarea);
+        return Promise.resolve();
+      }
+      document.querySelectorAll('.copy-btn').forEach(function (button) {
+        button.addEventListener('click', function () {
+          var copyArea = button.closest('.prompt-copy');
+          var source = copyArea ? copyArea.querySelector('.copy-source__text') : null;
+          if (!source) return;
+          copyText(source.textContent.trim()).then(function () {
+            button.classList.add('is-copied');
+            button.setAttribute('aria-label', '복사됨');
+            window.setTimeout(function () {
+              button.classList.remove('is-copied');
+              button.setAttribute('aria-label', '프롬프트 복사');
+            }, 1200);
+          });
+        });
+      });
+      var typingTimer = null;
+      var activeTypingTarget = null;
+      var activeTypingResult = null;
+      function resetPromptTyping() {
+        if (typingTimer) {
+          window.clearInterval(typingTimer);
+          typingTimer = null;
+        }
+        document.querySelectorAll('.typing-prompt').forEach(function (target) {
+          target.textContent = '';
+        });
+        document.querySelectorAll('.typing-result').forEach(function (result) {
+          result.classList.remove('is-visible');
+        });
+        activeTypingTarget = null;
+        activeTypingResult = null;
+      }
+      document.querySelectorAll('#hcn-card-6 .typing-result, #hcn-card-7 .typing-result').forEach(function (img) {
+        img.addEventListener('load', function () { markMediaSlotLoaded(img); });
+        markMediaSlotLoaded(img);
+      });
+      function markMediaSlotLoaded(img) {
+        if (!img) return;
+        var slot = img.closest('.slide-media-slot');
+        if (slot && img.complete && img.naturalWidth > 0) slot.classList.add('is-media-loaded');
+      }
+      function startPromptTyping(card) {
+        if (!card) return;
+        resetPromptTyping();
+        activeTypingTarget = card.querySelector('.typing-prompt');
+        activeTypingResult = card.querySelector('.typing-result');
+        markMediaSlotLoaded(activeTypingResult);
+        if (!activeTypingTarget) return;
+        var text = activeTypingTarget.getAttribute('data-text') || '';
+        var index = 0;
+        typingTimer = window.setInterval(function () {
+          activeTypingTarget.textContent = text.slice(0, index + 1);
+          index += 1;
+          if (index >= text.length) {
+            window.clearInterval(typingTimer);
+            typingTimer = null;
+            if (activeTypingResult) {
+              markMediaSlotLoaded(activeTypingResult);
+              activeTypingResult.classList.add('is-visible');
+            }
+          }
+        }, 95);
+      }
+      function onNavChange() {
+        var nav = document.querySelector('input[name="hcn-nav"]:checked');
+        var activeCard = nav ? document.getElementById(nav.id.replace('nav', 'card')) : null;
+        if (activeCard && activeCard.querySelector('.typing-prompt')) {
+          startPromptTyping(activeCard);
+        } else {
+          resetPromptTyping();
+        }
+        if (!nav || nav.id !== 'hcn-nav-1') {
+          pauseCoverVideo();
+          return;
+        }
+        window.setTimeout(playCoverVideoFromStart, 80);
+      }
+      document.querySelectorAll('input[name="hcn-nav"]').forEach(function (r) {
+        r.addEventListener('change', onNavChange);
+      });
+      onNavChange();
+    })();
+  </script>
+</body>
+</html>

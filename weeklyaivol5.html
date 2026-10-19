@@ -1,0 +1,1753 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>Weekly AI — ChatGPT 5.5 (VOL.5 골격)</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/static/pretendard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --font-sans: Pretendard, "Noto Sans KR", "Malgun Gothic", system-ui, -apple-system, "Segoe UI", sans-serif;
+      --font-cover-headline-min: 1.85rem;
+      --font-cover-headline-vw: 4.8vw;
+      --font-cover-headline-max: 2.45rem;
+      --font-cover-headline-mark-em: 1.42;
+      --font-cover-strapline: 23px;
+      --font-slide-title: 26px;
+      --font-slide-p: 14px;
+      --color-brand: #0d8a6a;
+    }
+
+    html { overflow-x: hidden; }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background: #ffffff;
+      font-family: var(--font-sans);
+    }
+
+    .carousel-shell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      padding: 48px 16px 64px;
+      gap: 14px;
+    }
+
+    .carousel-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      width: 100%;
+      max-width: 700px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .carousel__viewport {
+      flex: 0 1 540px;
+      min-width: 0;
+      width: 540px;
+      max-width: 540px;
+      overflow: hidden;
+      border-radius: 20px;
+      position: relative;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      touch-action: pan-y;
+      background: transparent;
+      transform-origin: top center;
+      -webkit-transform-origin: top center;
+    }
+
+    .carousel__inner {
+      width: 540px;
+      height: 720px;
+      overflow: hidden;
+      border-radius: 20px;
+      position: relative;
+    }
+
+    /* 반응형 축소: zoom 지원 브라우저는 zoom(비디오 흰 타임라인 어긋남 완화), 그 외는 기존 scale */
+    @media (max-width: 600px) {
+      .carousel__viewport {
+        height: 612px;
+        transform: scale(0.85);
+        -webkit-transform: scale(0.85);
+      }
+      @supports (zoom: 0.85) {
+        .carousel__viewport {
+          transform: none;
+          -webkit-transform: none;
+          zoom: 0.85;
+        }
+      }
+    }
+    @media (max-width: 520px) {
+      .carousel__viewport {
+        height: 540px;
+        transform: scale(0.75);
+        -webkit-transform: scale(0.75);
+      }
+      @supports (zoom: 0.75) {
+        .carousel__viewport {
+          transform: none;
+          -webkit-transform: none;
+          zoom: 0.75;
+        }
+      }
+    }
+    @media (max-width: 460px) {
+      .carousel__viewport {
+        height: 468px;
+        transform: scale(0.65);
+        -webkit-transform: scale(0.65);
+      }
+      @supports (zoom: 0.65) {
+        .carousel__viewport {
+          transform: none;
+          -webkit-transform: none;
+          zoom: 0.65;
+        }
+      }
+    }
+    @media (max-width: 400px) {
+      .carousel__viewport {
+        height: 396px;
+        transform: scale(0.55);
+        -webkit-transform: scale(0.55);
+      }
+      @supports (zoom: 0.55) {
+        .carousel__viewport {
+          transform: none;
+          -webkit-transform: none;
+          zoom: 0.55;
+        }
+      }
+    }
+
+    #deck {
+      position: relative !important;
+      width: 540px !important;
+      height: 720px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: block !important;
+    }
+
+    #deck > .card {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      margin: 0 !important;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.32s ease, visibility 0s linear 0.32s;
+      pointer-events: none;
+    }
+
+    .wai-nav {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+
+    #hcn-nav-1:checked ~ .carousel-row #hcn-card-1,
+    #hcn-nav-2:checked ~ .carousel-row #hcn-card-2,
+    #hcn-nav-3:checked ~ .carousel-row #hcn-card-3,
+    #hcn-nav-4:checked ~ .carousel-row #hcn-card-4,
+    #hcn-nav-5:checked ~ .carousel-row #hcn-card-5,
+    #hcn-nav-6:checked ~ .carousel-row #hcn-card-6,
+    #hcn-nav-7:checked ~ .carousel-row #hcn-card-7,
+    #hcn-nav-8:checked ~ .carousel-row #hcn-card-8,
+    #hcn-nav-9:checked ~ .carousel-row #hcn-card-9,
+    #hcn-nav-10:checked ~ .carousel-row #hcn-card-10,
+    #hcn-nav-11:checked ~ .carousel-row #hcn-card-11 {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      z-index: 2;
+      transition: opacity 0.32s ease, visibility 0s linear 0s;
+    }
+
+    .nav-stack {
+      position: relative;
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+      align-self: center;
+    }
+    .nav-stack > .nav-btn {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: none;
+    }
+
+    #hcn-nav-2:checked ~ .carousel-row .nav-prev-from-2 {
+      display: inline-flex;
+    }
+    #hcn-nav-3:checked ~ .carousel-row .nav-prev-from-3 {
+      display: inline-flex;
+    }
+    #hcn-nav-4:checked ~ .carousel-row .nav-prev-from-4 {
+      display: inline-flex;
+    }
+    #hcn-nav-5:checked ~ .carousel-row .nav-prev-from-5 {
+      display: inline-flex;
+    }
+    #hcn-nav-6:checked ~ .carousel-row .nav-prev-from-6 {
+      display: inline-flex;
+    }
+    #hcn-nav-7:checked ~ .carousel-row .nav-prev-from-7 {
+      display: inline-flex;
+    }
+    #hcn-nav-8:checked ~ .carousel-row .nav-prev-from-8 {
+      display: inline-flex;
+    }
+    #hcn-nav-9:checked ~ .carousel-row .nav-prev-from-9 {
+      display: inline-flex;
+    }
+    #hcn-nav-10:checked ~ .carousel-row .nav-prev-from-10 {
+      display: inline-flex;
+    }
+    #hcn-nav-11:checked ~ .carousel-row .nav-prev-from-11 {
+      display: inline-flex;
+    }
+    #hcn-nav-1:checked ~ .carousel-row .nav-prev-disabled {
+      display: inline-flex;
+    }
+
+    #hcn-nav-1:checked ~ .carousel-row .nav-next-from-1 {
+      display: inline-flex;
+    }
+    #hcn-nav-2:checked ~ .carousel-row .nav-next-from-2 {
+      display: inline-flex;
+    }
+    #hcn-nav-3:checked ~ .carousel-row .nav-next-from-3 {
+      display: inline-flex;
+    }
+    #hcn-nav-4:checked ~ .carousel-row .nav-next-from-4 {
+      display: inline-flex;
+    }
+    #hcn-nav-5:checked ~ .carousel-row .nav-next-from-5 {
+      display: inline-flex;
+    }
+    #hcn-nav-6:checked ~ .carousel-row .nav-next-from-6 {
+      display: inline-flex;
+    }
+    #hcn-nav-7:checked ~ .carousel-row .nav-next-from-7 {
+      display: inline-flex;
+    }
+    #hcn-nav-8:checked ~ .carousel-row .nav-next-from-8 {
+      display: inline-flex;
+    }
+    #hcn-nav-9:checked ~ .carousel-row .nav-next-from-9 {
+      display: inline-flex;
+    }
+    #hcn-nav-10:checked ~ .carousel-row .nav-next-from-10 {
+      display: inline-flex;
+    }
+    #hcn-nav-11:checked ~ .carousel-row .nav-next-disabled {
+      display: inline-flex;
+    }
+
+    .nav-btn.is-disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .carousel__counter .cnt-num { display: none; }
+    #hcn-nav-1:checked ~ .carousel__counter .cnt-1,
+    #hcn-nav-2:checked ~ .carousel__counter .cnt-2,
+    #hcn-nav-3:checked ~ .carousel__counter .cnt-3,
+    #hcn-nav-4:checked ~ .carousel__counter .cnt-4,
+    #hcn-nav-5:checked ~ .carousel__counter .cnt-5,
+    #hcn-nav-6:checked ~ .carousel__counter .cnt-6,
+    #hcn-nav-7:checked ~ .carousel__counter .cnt-7,
+    #hcn-nav-8:checked ~ .carousel__counter .cnt-8,
+    #hcn-nav-9:checked ~ .carousel__counter .cnt-9,
+    #hcn-nav-10:checked ~ .carousel__counter .cnt-10,
+    #hcn-nav-11:checked ~ .carousel__counter .cnt-11 {
+      display: inline;
+    }
+
+    .nav-btn {
+      flex-shrink: 0;
+      align-self: center;
+      position: relative;
+      z-index: 10;
+      width: 44px;
+      height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: 1px solid #d4d4d4;
+      background: #fafafa;
+      color: #262626;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nav-btn:hover:not(.is-disabled) { background: #f0f0f0; }
+
+    .carousel__counter {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #737373;
+      user-select: none;
+    }
+
+    .card {
+      width: 540px;
+      height: 720px;
+      aspect-ratio: 3 / 4;
+      position: relative;
+      overflow: hidden;
+      border-radius: 20px;
+      box-shadow:
+        0 20px 60px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.35);
+      flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+    }
+
+    .card-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 20%, #d4e8a0 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 15%, #a8e6c1 0%, transparent 45%),
+        radial-gradient(ellipse at 50% 50%, #5ccfb1 0%, transparent 55%),
+        radial-gradient(ellipse at 30% 70%, #3cc4a7 0%, transparent 50%),
+        radial-gradient(ellipse at 75% 80%, #1a8f8f 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 95%, #0d6b6e 0%, transparent 50%),
+        linear-gradient(180deg, #c8e6a0 0%, #4dc9a0 40%, #1a8888 80%, #0a5a5e 100%);
+      z-index: 0;
+    }
+
+    .card-bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 120% 80% at 50% -20%, rgba(255,255,255,0.35) 0%, transparent 55%),
+        radial-gradient(ellipse 90% 60% at 100% 100%, rgba(0,30,40,0.18) 0%, transparent 50%),
+        radial-gradient(ellipse 70% 50% at 0% 100%, rgba(0,40,35,0.12) 0%, transparent 45%);
+    }
+
+    .card-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      padding: 32px 28px;
+    }
+
+    .card-content--inner { padding-top: 36px; }
+
+    .card--cover .card-content--cover {
+      padding: 24px 24px 22px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .cover-inner {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .cover-hero-wrap {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: stretch;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .cover-hero {
+      align-self: flex-start;
+      width: 100%;
+      text-align: left;
+    }
+
+    .cover-figure {
+      margin: 10px 0 14px;
+      padding: 0;
+      max-width: 100%;
+      line-height: 0;
+    }
+
+    .cover-figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 200px;
+      object-fit: contain;
+      object-position: left center;
+    }
+
+    .cover-badge {
+      display: inline-block;
+      align-self: flex-start;
+      padding: 8px 16px;
+      margin-bottom: 10px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #063532;
+      background: rgba(6,53,50,0.14);
+      border: 1px solid rgba(6,53,50,0.2);
+      border-radius: 999px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 16px rgba(0,40,45,0.08);
+    }
+
+    .cover-headline {
+      margin: 0;
+      font-size: clamp(var(--font-cover-headline-min), var(--font-cover-headline-vw), var(--font-cover-headline-max));
+      font-weight: 900;
+      line-height: 1.18;
+      letter-spacing: -0.045em;
+      color: #0a1211;
+      text-shadow:
+        0 1px 0 rgba(255,255,255,0.45),
+        0 14px 40px rgba(0,0,0,0.1);
+    }
+
+    .cover-headline strong {
+      font-weight: 900;
+    }
+
+    .cover-headline__mark {
+      font-size: calc(1em * var(--font-cover-headline-mark-em));
+      color: #166534;
+    }
+
+    .card--cover .cover-strapline {
+      margin: 12px 0 0;
+      font-size: var(--font-cover-strapline, 32px) !important;
+      font-weight: 600;
+      line-height: 1.38;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+      text-align: left;
+      word-break: keep-all;
+    }
+
+    .cover-inner__bottom {
+      flex-shrink: 0;
+      padding-top: 12px;
+    }
+
+    .cover-swipe {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 0;
+    }
+
+    .cover-swipe__line {
+      display: none;
+    }
+
+    .cover-swipe__label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(10,30,28,0.42);
+    }
+
+    @keyframes cover-rise {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .cover-animate-1  { opacity: 0; animation: cover-rise 0.55s ease forwards; }
+    .cover-animate-1b { opacity: 0; animation: cover-rise 0.55s ease 0.06s forwards; }
+    .cover-animate-2  { opacity: 0; animation: cover-rise 0.55s ease 0.14s forwards; }
+    .cover-animate-2b { opacity: 0; animation: cover-rise 0.55s ease 0.2s forwards; }
+    .cover-animate-3  { opacity: 0; animation: cover-rise 0.55s ease 0.24s forwards; }
+
+    .slide-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 0;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+
+    .card:not(.card--cover) .slide-body {
+      padding: 18px 16px 14px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.38);
+      backdrop-filter: blur(14px);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.45),
+        0 12px 36px rgba(0,40,45,0.08);
+    }
+
+    .slide-body--tight { gap: 8px; padding-top: 14px !important; }
+
+    /* 2p~11p: 글래스 없음 · 제목 블록 높이 + 16:9 미디어 슬롯을 2번 카드와 동일 규격으로 통일 */
+    #hcn-card-2 .card-content--inner,
+    #hcn-card-3 .card-content--inner,
+    #hcn-card-4 .card-content--inner,
+    #hcn-card-5 .card-content--inner,
+    #hcn-card-6 .card-content--inner,
+    #hcn-card-7 .card-content--inner,
+    #hcn-card-8 .card-content--inner,
+    #hcn-card-9 .card-content--inner,
+    #hcn-card-10 .card-content--inner,
+    #hcn-card-11 .card-content--inner {
+      padding: 0;
+    }
+
+    #hcn-card-2 .slide-body.slide-body--tight,
+    #hcn-card-3 .slide-body.slide-body--tight,
+    #hcn-card-4 .slide-body.slide-body--tight,
+    #hcn-card-5 .slide-body.slide-body--tight,
+    #hcn-card-6 .slide-body.slide-body--tight,
+    #hcn-card-7 .slide-body.slide-body--tight,
+    #hcn-card-8 .slide-body.slide-body--tight,
+    #hcn-card-9 .slide-body.slide-body--tight,
+    #hcn-card-10 .slide-body.slide-body--tight,
+    #hcn-card-11 .slide-body.slide-body--tight {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      padding: 0 !important;
+      padding-top: 0 !important;
+      border-radius: 0;
+      background: transparent;
+      border: none;
+      backdrop-filter: none;
+      box-shadow: none;
+    }
+
+    /* 5p: 본문+각주로 세로 스크롤 생기지 않게 */
+    #hcn-card-5 .slide-body.slide-body--tight {
+      overflow-y: hidden;
+      overflow-x: hidden;
+    }
+
+    #hcn-card-7 .slide-body.slide-body--tight {
+      overflow-y: hidden;
+      overflow-x: hidden;
+    }
+
+    #hcn-card-2 .slide-head,
+    #hcn-card-3 .slide-head,
+    #hcn-card-4 .slide-head,
+    #hcn-card-5 .slide-head,
+    #hcn-card-6 .slide-head,
+    #hcn-card-7 .slide-head,
+    #hcn-card-8 .slide-head,
+    #hcn-card-9 .slide-head,
+    #hcn-card-10 .slide-head,
+    #hcn-card-11 .slide-head {
+      flex: 0 0 auto;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 96px;
+      padding: 12px 18px 8px;
+      overflow: hidden;
+    }
+
+    .slide-head-logo {
+      display: block;
+      width: 96px;
+      max-width: 40%;
+      height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.2));
+      opacity: 0.96;
+    }
+
+    #hcn-card-3 .slide-yt-fallback,
+    #hcn-card-4 .slide-yt-fallback,
+    #hcn-card-7 .slide-yt-fallback,
+    #hcn-card-8 .slide-yt-fallback,
+    #hcn-card-9 .slide-yt-fallback,
+    #hcn-card-10 .slide-yt-fallback {
+      margin: 0;
+      padding: 8px 18px 10px;
+      flex-shrink: 0;
+    }
+
+    .slide-body-fill {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    #hcn-card-2 .slide-yt-wrap.slide-media-slot,
+    #hcn-card-3 .slide-yt-wrap.slide-media-slot,
+    #hcn-card-4 .slide-yt-wrap.slide-media-slot,
+    #hcn-card-5 .slide-yt-wrap.slide-media-slot,
+    #hcn-card-6 .slide-yt-wrap.slide-media-slot,
+    #hcn-card-7 .slide-yt-wrap.slide-media-slot,
+    #hcn-card-8 .slide-yt-wrap.slide-media-slot,
+    #hcn-card-9 .slide-yt-wrap.slide-media-slot,
+    #hcn-card-10 .slide-yt-wrap.slide-media-slot,
+    #hcn-card-11 .slide-yt-wrap.slide-media-slot {
+      flex: 0 0 auto;
+      position: relative;
+      width: 100%;
+      margin: -10px 0 -1px 0;
+      line-height: 0;
+      aspect-ratio: 16 / 9;
+      background: rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+      border-radius: 0;
+    }
+
+    #hcn-card-3 .slide-yt-wrap.slide-media-slot,
+    #hcn-card-4 .slide-yt-wrap.slide-media-slot,
+    #hcn-card-7 .slide-yt-wrap.slide-media-slot,
+    #hcn-card-8 .slide-yt-wrap.slide-media-slot,
+    #hcn-card-9 .slide-yt-wrap.slide-media-slot,
+    #hcn-card-10 .slide-yt-wrap.slide-media-slot,
+    #hcn-card-11 .slide-yt-wrap.slide-media-slot {
+      background: #ffffff;
+    }
+
+    /* 8p: 파트너 칩 + 인용문 — 16:9 미디어 슬롯을 이미지와 동일한 크기·위치로 채움 */
+    #hcn-card-8 .slide-yt-wrap.slide-media-slot {
+      line-height: normal;
+    }
+
+    #hcn-card-8 .slide-partners-quote {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 8px 14px 10px;
+      box-sizing: border-box;
+      min-height: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      text-align: center;
+    }
+
+    #hcn-card-8 .slide-partner-chips {
+      flex-shrink: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 6px;
+      justify-content: center;
+      align-items: center;
+      align-content: center;
+    }
+
+    #hcn-card-8 .slide-partner-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 7px;
+      font: inherit;
+      font-size: clamp(8px, 1.55vw, 9.5px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #0a1211;
+      background: rgba(13, 138, 106, 0.11);
+      border: 1px solid rgba(13, 138, 106, 0.24);
+      border-radius: 999px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      appearance: none;
+      margin: 0;
+      line-height: 1.3;
+    }
+
+    #hcn-card-8 .slide-partner-chip:focus-visible {
+      outline: 2px solid var(--color-brand);
+      outline-offset: 2px;
+    }
+
+    #hcn-card-8 .slide-partner-chip.is-active {
+      background: rgba(13, 138, 106, 0.24);
+      border-color: rgba(13, 138, 106, 0.48);
+      box-shadow: 0 0 0 1px rgba(13, 138, 106, 0.12);
+    }
+
+    #hcn-card-8 .slide-quote-wrap {
+      flex: 0 1 auto;
+      width: 100%;
+      max-width: 100%;
+      max-height: min(248px, 78%);
+      min-height: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 0 2px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    #hcn-card-8 .slide-quote {
+      margin: 0 auto;
+      max-width: 38em;
+      font-size: clamp(12px, 2.55vw, 15px);
+      font-weight: 650;
+      line-height: 1.5;
+      letter-spacing: -0.02em;
+      color: #1a2422;
+      word-break: keep-all;
+      text-align: center;
+    }
+
+    #hcn-card-8 .slide-quote__text {
+      margin: 0;
+    }
+
+    #hcn-card-8 .slide-quote cite {
+      display: block;
+      margin-top: 10px;
+      font-size: clamp(10.5px, 2.1vw, 13px);
+      font-weight: 800;
+      font-style: normal;
+      color: #0a1211;
+      letter-spacing: -0.01em;
+    }
+
+    #hcn-card-3 .bench-scroll {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 14px 10px 18px;
+      line-height: normal;
+      box-sizing: border-box;
+    }
+
+    #hcn-card-3 .bench-table {
+      flex-shrink: 0;
+      width: 100%;
+      max-width: 100%;
+      border-collapse: collapse;
+      font-size: 9.5px;
+      color: #0a1211;
+      table-layout: fixed;
+    }
+
+    #hcn-card-3 .bench-table th,
+    #hcn-card-3 .bench-table td {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 4px 3px;
+      vertical-align: middle;
+      word-break: keep-all;
+    }
+
+    #hcn-card-3 .bench-table thead th {
+      font-weight: 800;
+      text-align: center;
+      letter-spacing: -0.02em;
+    }
+
+    #hcn-card-3 .bench-table th:first-child,
+    #hcn-card-3 .bench-table td:first-child {
+      text-align: left;
+      font-weight: 700;
+      width: 26%;
+      padding-left: 2px;
+    }
+
+    #hcn-card-3 .bench-table td:not(:first-child),
+    #hcn-card-3 .bench-table th:not(:first-child) {
+      text-align: center;
+      font-weight: 600;
+    }
+
+    #hcn-card-3 .bench-table strong {
+      font-weight: 900;
+    }
+
+    /* GPT-5.5 열 강조: 빨간 박스 테두리 */
+    #hcn-card-3 .bench-table thead th:nth-child(2),
+    #hcn-card-3 .bench-table tbody td:nth-child(2) {
+      border-left: 2px solid #e53935;
+      border-right: 2px solid #e53935;
+    }
+
+    #hcn-card-3 .bench-table thead th:nth-child(2) {
+      border-top: 2px solid #e53935;
+    }
+
+    #hcn-card-3 .bench-table tbody tr:last-child td:nth-child(2) {
+      border-bottom: 2px solid #e53935;
+    }
+
+    #hcn-card-2 .slide-media-slot video,
+    #hcn-card-5 .slide-media-slot video {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+      vertical-align: top;
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    /* 6p: 영상박스에 꽉 차게(비율에 따라 좌우 또는 상하 크롭) */
+    #hcn-card-6 .slide-media-slot video {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      vertical-align: top;
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    /* 11p(마지막): 10장 영상 — 합성 틈 방지 */
+    #hcn-card-11 .slide-yt-wrap.slide-media-slot {
+      isolation: isolate;
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+    }
+
+    #hcn-card-11 .slide-media-slot video {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      vertical-align: top;
+      margin: 0;
+      padding: 0;
+      border: none;
+      outline: none;
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    #hcn-card-4 .slide-media-slot img,
+    #hcn-card-7 .slide-media-slot img,
+    #hcn-card-10 .slide-media-slot img {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+      vertical-align: top;
+    }
+
+    /* 9p: 인포그래픽 전체 노출(확대 시 슬롯에 잘리지 않게) */
+    #hcn-card-9 .slide-media-slot img {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+      vertical-align: top;
+      transform: none;
+    }
+
+    #hcn-card-4 .slide-media-slot img,
+    #hcn-card-7 .slide-media-slot img,
+    #hcn-card-10 .slide-media-slot img {
+      transform: scale(1.1);
+      transform-origin: center center;
+    }
+
+
+    #hcn-card-2 .card-content--inner > .footer,
+    #hcn-card-3 .card-content--inner > .footer,
+    #hcn-card-4 .card-content--inner > .footer,
+    #hcn-card-5 .card-content--inner > .footer,
+    #hcn-card-6 .card-content--inner > .footer,
+    #hcn-card-7 .card-content--inner > .footer,
+    #hcn-card-8 .card-content--inner > .footer,
+    #hcn-card-9 .card-content--inner > .footer,
+    #hcn-card-10 .card-content--inner > .footer,
+    #hcn-card-11 .card-content--inner > .footer {
+      margin-top: auto;
+      padding: 12px 18px;
+      border-top: none;
+      background: rgba(12, 55, 52, 0.22);
+    }
+
+    #hcn-card-2 .footer-logo path,
+    #hcn-card-3 .footer-logo path,
+    #hcn-card-4 .footer-logo path,
+    #hcn-card-5 .footer-logo path,
+    #hcn-card-6 .footer-logo path,
+    #hcn-card-7 .footer-logo path,
+    #hcn-card-8 .footer-logo path,
+    #hcn-card-9 .footer-logo path,
+    #hcn-card-10 .footer-logo path,
+    #hcn-card-11 .footer-logo path {
+      fill: #0a1211;
+    }
+
+    #hcn-card-2 .footer-text,
+    #hcn-card-3 .footer-text,
+    #hcn-card-4 .footer-text,
+    #hcn-card-5 .footer-text,
+    #hcn-card-6 .footer-text,
+    #hcn-card-7 .footer-text,
+    #hcn-card-8 .footer-text,
+    #hcn-card-9 .footer-text,
+    #hcn-card-10 .footer-text,
+    #hcn-card-11 .footer-text {
+      color: #0a1211;
+    }
+
+    .slide-h2 {
+      font-size: var(--font-slide-title);
+      font-weight: 900;
+      color: #0a1211;
+      line-height: 1.25;
+      word-break: keep-all;
+      letter-spacing: -0.03em;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.35);
+    }
+
+    .slide-p {
+      font-size: var(--font-slide-p);
+      font-weight: 500;
+      color: rgba(0,0,0,0.75);
+      line-height: 1.65;
+      word-break: keep-all;
+    }
+
+    .emph { font-weight: 800; color: #062a26; }
+
+    .slide-skeleton {
+      margin: 8px 0 0;
+      padding: 20px 18px;
+      border-radius: 14px;
+      border: 1px dashed rgba(6, 53, 50, 0.35);
+      background: rgba(255,255,255,0.25);
+      font-size: 11px;
+      font-weight: 650;
+      line-height: 1.45;
+      color: rgba(6, 53, 50, 0.78);
+      word-break: keep-all;
+    }
+
+    .slide-yt-fallback {
+      font-size: 11px;
+      font-weight: 650;
+      line-height: 1.45;
+      color: rgba(6, 53, 50, 0.78);
+      word-break: keep-all;
+    }
+
+    .slide-yt-fallback a {
+      color: #065f46;
+      font-weight: 800;
+    }
+
+    .slide-yt-fallback code {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: 0.92em;
+      font-weight: 700;
+    }
+
+    .slide-copy {
+      padding: 12px 18px 0;
+      color: #0a1211;
+    }
+
+    .slide-copy__num {
+      margin: 0;
+      font-size: clamp(21px, 3.3vw, 24px);
+      font-weight: 900;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .slide-copy__title {
+      margin: 2px 0 0;
+      font-size: clamp(30px, 4.8vw, 37px);
+      font-weight: 900;
+      line-height: 1.18;
+      letter-spacing: -0.03em;
+      word-break: keep-all;
+    }
+
+    .slide-copy__body {
+      margin: 10px 0 0;
+      font-size: clamp(15.5px, 2.8vw, 18.5px);
+      font-weight: 700;
+      line-height: 1.56;
+      letter-spacing: -0.01em;
+      word-break: keep-all;
+    }
+
+    #hcn-card-4 .slide-copy__note,
+    #hcn-card-5 .slide-copy__note,
+    #hcn-card-7 .slide-copy__note {
+      margin: 10px 0 0;
+      padding-top: 2px;
+      font-size: clamp(11.5px, 2.15vw, 13px);
+      font-weight: 700;
+      line-height: 1.48;
+      letter-spacing: -0.01em;
+      color: #4a5552;
+      word-break: keep-all;
+    }
+
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: auto;
+      padding-top: 14px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .footer-logo {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+
+    .footer-logo path { fill: #111; }
+
+    .footer-text {
+      font-size: 14px;
+      font-weight: 700;
+      color: #111;
+      letter-spacing: 1px;
+    }
+
+    .card-content--inner > .footer {
+      padding-top: 8px;
+      flex-shrink: 0;
+    }
+</style>
+</head>
+<body>
+  <div class="carousel-shell" id="html-cardnews-vol5">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-1" checked>
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-2">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-3">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-4">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-5">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-6">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-7">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-8">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-9">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-10">
+    <input class="wai-nav" type="radio" name="hcn-nav" id="hcn-nav-11">
+
+    <div class="carousel-row">
+      <div class="nav-stack nav-stack--prev">
+        <span class="nav-btn nav-btn--prev nav-prev-disabled is-disabled" aria-hidden="true">←</span>
+        <label class="nav-btn nav-btn--prev nav-prev-from-2" for="hcn-nav-1" aria-label="이전 슬라이드">←</label>
+        <label class="nav-btn nav-btn--prev nav-prev-from-3" for="hcn-nav-2" aria-label="이전 슬라이드">←</label>
+        <label class="nav-btn nav-btn--prev nav-prev-from-4" for="hcn-nav-3" aria-label="이전 슬라이드">←</label>
+        <label class="nav-btn nav-btn--prev nav-prev-from-5" for="hcn-nav-4" aria-label="이전 슬라이드">←</label>
+        <label class="nav-btn nav-btn--prev nav-prev-from-6" for="hcn-nav-5" aria-label="이전 슬라이드">←</label>
+        <label class="nav-btn nav-btn--prev nav-prev-from-7" for="hcn-nav-6" aria-label="이전 슬라이드">←</label>
+        <label class="nav-btn nav-btn--prev nav-prev-from-8" for="hcn-nav-7" aria-label="이전 슬라이드">←</label>
+        <label class="nav-btn nav-btn--prev nav-prev-from-9" for="hcn-nav-8" aria-label="이전 슬라이드">←</label>
+        <label class="nav-btn nav-btn--prev nav-prev-from-10" for="hcn-nav-9" aria-label="이전 슬라이드">←</label>
+        <label class="nav-btn nav-btn--prev nav-prev-from-11" for="hcn-nav-10" aria-label="이전 슬라이드">←</label>
+      </div>
+
+      <div class="carousel__viewport">
+        <div class="carousel__inner">
+          <div id="deck">
+
+            <section class="card card--cover" id="hcn-card-1" aria-label="슬라이드 1 표지">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--cover">
+                <div class="cover-inner">
+                  <div class="cover-hero-wrap">
+                    <div class="cover-hero">
+                      <span class="cover-badge cover-animate-1">VOL.5</span>
+                      <figure class="cover-figure cover-animate-1b">
+                        <img
+                          src="https://kikeun.github.io/KIKEUN/ai54.png"
+                          alt="마크다운 로고와 기호 일러스트"
+                          loading="eager"
+                          decoding="async"
+                          referrerpolicy="no-referrer-when-downgrade"
+                        />
+                      </figure>
+                      <h1 class="cover-headline cover-animate-2">
+                        <strong>Open AI의 역습</strong><br>
+                        <strong class="cover-headline__mark">ChatGPT-5.5 출시</strong>
+                      </h1>
+                    </div>
+                  </div>
+                  <div class="cover-inner__bottom cover-animate-3">
+                    <div class="cover-swipe">
+                      <div class="cover-swipe__line" aria-hidden="true"></div>
+                      <span class="cover-swipe__label">총 11장 · Swipe to explore</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-2" aria-label="슬라이드 2 · 소개 영상">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body slide-body--tight">
+                  <div class="slide-head">
+                    <img class="slide-head-logo" src="https://kikeun.github.io/KIKEUN/ai54.png" alt="AI 5.4" loading="lazy" decoding="async" />
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot">
+                    <video
+                      class="slide-card-video"
+                      src="https://kikeun.github.io/KIKEUN/1%EC%9E%A5.mp4"
+                      playsinline
+                      muted
+                      loop
+                      preload="metadata"
+                    ></video>
+                  </div>
+                  <div class="slide-copy">
+                    <p class="slide-copy__num">#1</p>
+                    <p class="slide-copy__title">GPT-5.5가 공개되었습니다.</p>
+                    <p class="slide-copy__body">생각은 더 깊어지고, 실행은 더 빨라졌습니다.<br>이번 변화의 핵심만 9장의 카드로 가볍게 확인해보세요.</p>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-3" aria-label="슬라이드 3 · 벤치마크 표">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body slide-body--tight">
+                  <div class="slide-head">
+                    <img class="slide-head-logo" src="https://kikeun.github.io/KIKEUN/ai54.png" alt="AI 5.4" loading="lazy" decoding="async" />
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot">
+                    <div class="bench-scroll">
+                      <table class="bench-table">
+                        <thead>
+                          <tr>
+                            <th scope="col">Benchmark</th>
+                            <th scope="col">GPT-5.5</th>
+                            <th scope="col">GPT-5.4</th>
+                            <th scope="col">GPT-5.5 Pro</th>
+                            <th scope="col">GPT-5.4 Pro</th>
+                            <th scope="col">Claude Opus 4.7</th>
+                            <th scope="col">Gemini 3.1 Pro</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Terminal-Bench 2.0</td>
+                            <td><strong>82.7%</strong></td>
+                            <td>75.1%</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>69.4%</td>
+                            <td>68.5%</td>
+                          </tr>
+                          <tr>
+                            <td>Expert-SWE(내부)</td>
+                            <td><strong>73.1%</strong></td>
+                            <td>68.5%</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                          </tr>
+                          <tr>
+                            <td>GDPval (wins or ties)</td>
+                            <td><strong>84.9%</strong></td>
+                            <td>83.0%</td>
+                            <td>82.3%</td>
+                            <td>82.0%</td>
+                            <td>80.3%</td>
+                            <td>67.3%</td>
+                          </tr>
+                          <tr>
+                            <td>OSWorld-Verified</td>
+                            <td><strong>78.7%</strong></td>
+                            <td>75.0%</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>78.0%</td>
+                            <td>-</td>
+                          </tr>
+                          <tr>
+                            <td>Toolathlon</td>
+                            <td><strong>55.6%</strong></td>
+                            <td>54.6%</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>48.8%</td>
+                          </tr>
+                          <tr>
+                            <td>BrowseComp</td>
+                            <td>84.4%</td>
+                            <td>82.7%</td>
+                            <td><strong>90.1%</strong></td>
+                            <td>89.3%</td>
+                            <td>79.3%</td>
+                            <td>85.9%</td>
+                          </tr>
+                          <tr>
+                            <td>FrontierMath Tier 1-3</td>
+                            <td>51.7%</td>
+                            <td>47.6%</td>
+                            <td><strong>52.4%</strong></td>
+                            <td>50.0%</td>
+                            <td>43.8%</td>
+                            <td>36.9%</td>
+                          </tr>
+                          <tr>
+                            <td>FrontierMath Tier 4</td>
+                            <td>35.4%</td>
+                            <td>27.1%</td>
+                            <td><strong>39.6%</strong></td>
+                            <td>38.0%</td>
+                            <td>22.9%</td>
+                            <td>16.7%</td>
+                          </tr>
+                          <tr>
+                            <td>CyberGym</td>
+                            <td><strong>81.8%</strong></td>
+                            <td>79.0%</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>73.1%</td>
+                            <td>-</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <div class="slide-copy">
+                    <p class="slide-copy__num">#2</p>
+                    <p class="slide-copy__title">무엇이 달라졌나요</p>
+                    <p class="slide-copy__body">GPT-5.5는 단순히 더 똑똑한 것을 넘어, 더 적은 토큰과 재시도로도 높은 품질의 결과를 내는 효율적인 모델입니다.<br>또한 Claude 4.7 대비 평균 약 +7~8%p 성능 우위를 보이며,<br>고난도 수학·코딩·터미널 작업에서 +10%p 이상 강점을 보입니다.</p>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-4" aria-label="슬라이드 4 · 3장 이미지">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body slide-body--tight">
+                  <div class="slide-head">
+                    <img class="slide-head-logo" src="https://kikeun.github.io/KIKEUN/ai54.png" alt="AI 5.4" loading="lazy" decoding="async" />
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot">
+                    <img
+                      class="slide-card-figure"
+                      src="https://kikeun.github.io/KIKEUN/3%EC%9E%A5.png"
+                      alt="3장"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  <div class="slide-copy">
+                    <p class="slide-copy__num">#3</p>
+                    <p class="slide-copy__title">20시간도 끝까지 갑니다</p>
+                    <p class="slide-copy__body">복잡한 코딩 작업에서 멈추지 않고 끝까지 갑니다.<br>터미널 벤치 82.7%로 역대 최고 점수를 기록했고,<br>20시간짜리 장기 코딩에서도 이전 모델을 안정적으로 앞섰어요.</p>
+                    <p class="slide-copy__note" role="note">
+                      Terminal Bench(터미널 벤치)란?<br>
+                      AI가 실제 개발자처럼 터미널(명령어 창)을 얼마나 잘 다루는지를 평가하는 벤치마크
+                    </p>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-5" aria-label="슬라이드 5 · 4장 영상">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body slide-body--tight">
+                  <div class="slide-head">
+                    <img class="slide-head-logo" src="https://kikeun.github.io/KIKEUN/ai54.png" alt="AI 5.4" loading="lazy" decoding="async" />
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot">
+                    <video
+                      class="slide-card-video"
+                      data-video-src="https://kikeun.github.io/KIKEUN/4%EC%9E%A5.mp4"
+                      playsinline
+                      muted
+                      loop
+                      preload="none"
+                    ></video>
+                  </div>
+                  <div class="slide-copy">
+                    <p class="slide-copy__num">#4</p>
+                    <p class="slide-copy__title">문서부터 데이터까지 ‘실무형 AI’</p>
+                    <p class="slide-copy__body">Codex에서 GPT-5.5는 문서 생성 능력이 크게 향상되었습니다. OpenAI 내부에서도 85% 이상이 매주 활용하고 있으며, 재무팀은 리포트 자동화로 주당 5~10시간을 절약하고 있습니다.</p>
+                    <p class="slide-copy__note" role="note">
+                      Codex란?<br>
+                      코드 작성, 수정, 실행, 테스트까지 직접 처리하는 AI 에이전트 도구이고<br>
+                      각종 데이터처리 및 문서 작업까지 실제 업무를 진행합니다.
+                    </p>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-6" aria-label="슬라이드 6 · 5장 영상">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body slide-body--tight">
+                  <div class="slide-head">
+                    <img class="slide-head-logo" src="https://kikeun.github.io/KIKEUN/ai54.png" alt="AI 5.4" loading="lazy" decoding="async" />
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot">
+                    <video
+                      class="slide-card-video"
+                      data-video-src="https://kikeun.github.io/KIKEUN/5%EC%9E%A5.mp4"
+                      playsinline
+                      muted
+                      loop
+                      preload="none"
+                    ></video>
+                  </div>
+                  <div class="slide-copy">
+                    <p class="slide-copy__num">#5</p>
+                    <p class="slide-copy__title">연구도 몇 시간으로</p>
+                    <p class="slide-copy__body">Jackson Laboratory의 Derya Unutmaz 교수는 GPT-5.5 Pro를 활용해 62개 샘플과 약 2.8만 개 유전자로 구성된 유전자 발현 데이터를 분석하고, 연구 보고서와 핵심 인사이트까지 도출했으며, 이는 기존에는 연구팀이 수개월 걸릴 작업이라고 평가했습니다.<br>이러한 예시는 연구분야의 리서치와 분석에 있어 GPT-5.5가 전문가의 의도를 더 잘 구현하는 모습을 보여줍니다.</p>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-7" aria-label="슬라이드 7 · 6장 이미지">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body slide-body--tight">
+                  <div class="slide-head">
+                    <img class="slide-head-logo" src="https://kikeun.github.io/KIKEUN/ai54.png" alt="AI 5.4" loading="lazy" decoding="async" />
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot">
+                    <img
+                      class="slide-card-figure"
+                      src="https://kikeun.github.io/KIKEUN/6%EC%9E%A5.png"
+                      alt="6장"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  <div class="slide-copy">
+                    <p class="slide-copy__num">#6</p>
+                    <p class="slide-copy__title">절반 비용, 같은 결과</p>
+                    <p class="slide-copy__body">같은 문제를 풀 때 토큰을 훨씬 적게 쓰면서 더 좋은 결과를 냅니다.<br>코딩 인덱스 기준(인공지능 분석 인텔리젠스 지표) 경쟁 모델의 절반 비용으로 최상위 성능을 보여주고 있습니다.</p>
+                    <p class="slide-copy__note" role="note">
+                      인공지능 분석 인텔리전스 지표<span class="slide-copy__note-paren"></span>는 외부 기관이 수행한 10가지 평가인 AA-LCR, AA-Omniscience, CritPt, GDPval-AA, GPQA Diamond, Humanity’s Last Exam, IFBench, SciCode, Terminal-Bench Hard, τ²-Bench Telecom의 가중 평균입니다.
+                    </p>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-8" aria-label="슬라이드 8 · 파트너 인용">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body slide-body--tight">
+                  <div class="slide-head">
+                    <img class="slide-head-logo" src="https://kikeun.github.io/KIKEUN/ai54.png" alt="AI 5.4" loading="lazy" decoding="async" />
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot">
+                    <div class="slide-partners-quote">
+                      <div class="slide-partner-chips" role="tablist" aria-label="관련 기업·제품 인용">
+                        <button type="button" class="slide-partner-chip is-active" role="tab" aria-selected="true" data-partner="cursor">Cursor</button>
+                        <button type="button" class="slide-partner-chip" role="tab" aria-selected="false" data-partner="lovable">Lovable</button>
+                        <button type="button" class="slide-partner-chip" role="tab" aria-selected="false" data-partner="cognition">Cognition</button>
+                        <button type="button" class="slide-partner-chip" role="tab" aria-selected="false" data-partner="windsurf">Windsurf</button>
+                        <button type="button" class="slide-partner-chip" role="tab" aria-selected="false" data-partner="github">GitHub</button>
+                        <button type="button" class="slide-partner-chip" role="tab" aria-selected="false" data-partner="jetbrains">JetBrains</button>
+                        <button type="button" class="slide-partner-chip" role="tab" aria-selected="false" data-partner="sonar">Sonar</button>
+                      </div>
+                      <div class="slide-quote-wrap" role="tabpanel">
+                        <blockquote class="slide-quote">
+                          <p class="slide-quote__text"></p>
+                          <cite class="slide-quote__cite"></cite>
+                        </blockquote>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="slide-copy">
+                    <p class="slide-copy__num">#7</p>
+                    <p class="slide-copy__title">관련 종사자들은 이렇게 말해요</p>
+                    <p class="slide-copy__body">테스트 엔지니어들은 GPT-5.5가 GPT-5.4와 Claude Opus 4.7보다 추론 능력과 자율성이 뛰어나, 별도 지시 없이도 문제를 미리 파악하고 거의 완성된 결과를 만들어낸다고 평가했습니다.<br>엔지니어들은 GPT-5.5 없이는 업무 효율이 크게 떨어질 정도라고 표현하기도 했습니다.</p>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-9" aria-label="슬라이드 9 · 이미지">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body slide-body--tight">
+                  <div class="slide-head">
+                    <img class="slide-head-logo" src="https://kikeun.github.io/KIKEUN/ai54.png" alt="AI 5.4" loading="lazy" decoding="async" />
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot">
+                    <img
+                      class="slide-card-figure"
+                      src="https://kikeun.github.io/KIKEUN/ai16.png"
+                      alt="이용 안내"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  <div class="slide-copy">
+                    <p class="slide-copy__num">#8</p>
+                    <p class="slide-copy__title">어떻게 이용할 수 있나요</p>
+                    <p class="slide-copy__body">GPT-5.5는 유료 계정 사용자에게 제공되며, ChatGPT와 Codex에서 Plus, Pro, Business, Enterprise 이용자에게 제공되고 있습니다.<br>또한 GPT-5.5 Pro는 ChatGPT의 Pro, Business, Enterprise 사용자에게 제공되고 있습니다.</p>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-10" aria-label="슬라이드 10 · Copilot 이미지">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body slide-body--tight">
+                  <div class="slide-head">
+                    <img class="slide-head-logo" src="https://kikeun.github.io/KIKEUN/ai54.png" alt="AI 5.4" loading="lazy" decoding="async" />
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot">
+                    <img
+                      class="slide-card-figure"
+                      src="https://kikeun.github.io/KIKEUN/ai59.png"
+                      alt="Copilot와 GPT-5.5"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  <div class="slide-copy">
+                    <p class="slide-copy__num">#9</p>
+                    <p class="slide-copy__title">Copilot 에서도 GPT-5.5를 사용할 수 있어요</p>
+                    <p class="slide-copy__body">사내 copilot 환경에서도 더 정교해진 GPT 성능을 그대로 활용할 수 있습니다. 복잡한 작업은 더 빠르게 처리하고, 반복 업무는 줄이면서 업무 효율과 완성도를 동시에 끌어올릴 수 있습니다.
+                  </div> 
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="hcn-card-11" aria-label="슬라이드 11 · 10장 영상">
+              <div class="card-bg"></div>
+              <div class="card-content card-content--inner">
+                <div class="slide-body slide-body--tight">
+                  <div class="slide-head">
+                    <img class="slide-head-logo" src="https://kikeun.github.io/KIKEUN/ai54.png" alt="AI 5.4" loading="lazy" decoding="async" />
+                  </div>
+                  <div class="slide-yt-wrap slide-media-slot">
+                    <video
+                      class="slide-card-video"
+                      data-video-src="https://kikeun.github.io/KIKEUN/10%EC%9E%A5.mp4"
+                      playsinline
+                      muted
+                      loop
+                      preload="none"
+                    ></video>
+                  </div>
+                  <div class="slide-copy">
+                    <p class="slide-copy__num">#10</p>
+                    <p class="slide-copy__title">ChatGPT-5.5를 요약하면</p>
+                    <p class="slide-copy__body">ChatGPT-5.5는 그저 똑똑해진 모델이 아닙니다.<br>오래 일하고, 효율적이고, 전문 업무에 바로 투입할 수 있는<br>진짜 일꾼에 가까워졌습니다.</p>
+                  </div>
+                </div>
+                <div class="footer">
+                  <svg class="footer-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 45L28 35V80L12 90V45Z"/>
+                    <path d="M28 5 L82 32 V48 L38 70 V54 L66 40 L28 21 V5 Z"/>
+                  </svg>
+                  <span class="footer-text">AI디자인랩</span>
+                </div>
+              </div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-stack nav-stack--next">
+        <label class="nav-btn nav-btn--next nav-next-from-1" for="hcn-nav-2" aria-label="다음 슬라이드">→</label>
+        <label class="nav-btn nav-btn--next nav-next-from-2" for="hcn-nav-3" aria-label="다음 슬라이드">→</label>
+        <label class="nav-btn nav-btn--next nav-next-from-3" for="hcn-nav-4" aria-label="다음 슬라이드">→</label>
+        <label class="nav-btn nav-btn--next nav-next-from-4" for="hcn-nav-5" aria-label="다음 슬라이드">→</label>
+        <label class="nav-btn nav-btn--next nav-next-from-5" for="hcn-nav-6" aria-label="다음 슬라이드">→</label>
+        <label class="nav-btn nav-btn--next nav-next-from-6" for="hcn-nav-7" aria-label="다음 슬라이드">→</label>
+        <label class="nav-btn nav-btn--next nav-next-from-7" for="hcn-nav-8" aria-label="다음 슬라이드">→</label>
+        <label class="nav-btn nav-btn--next nav-next-from-8" for="hcn-nav-9" aria-label="다음 슬라이드">→</label>
+        <label class="nav-btn nav-btn--next nav-next-from-9" for="hcn-nav-10" aria-label="다음 슬라이드">→</label>
+        <label class="nav-btn nav-btn--next nav-next-from-10" for="hcn-nav-11" aria-label="다음 슬라이드">→</label>
+        <span class="nav-btn nav-btn--next nav-next-disabled is-disabled" aria-hidden="true">→</span>
+      </div>
+    </div>
+
+    <div class="carousel__counter" aria-live="polite">
+      <span class="cnt-num cnt-1">1</span><span class="cnt-num cnt-2">2</span><span class="cnt-num cnt-3">3</span><span class="cnt-num cnt-4">4</span><span class="cnt-num cnt-5">5</span><span class="cnt-num cnt-6">6</span><span class="cnt-num cnt-7">7</span><span class="cnt-num cnt-8">8</span><span class="cnt-num cnt-9">9</span><span class="cnt-num cnt-10">10</span><span class="cnt-num cnt-11">11</span> / 11
+    </div>
+  </div>
+  <script>
+    (function () {
+      var VIDEO_SLIDES = [
+        { navId: "hcn-nav-2", sel: "#hcn-card-2 .slide-card-video" },
+        { navId: "hcn-nav-5", sel: "#hcn-card-5 .slide-card-video" },
+        { navId: "hcn-nav-6", sel: "#hcn-card-6 .slide-card-video" },
+        { navId: "hcn-nav-11", sel: "#hcn-card-11 .slide-card-video" },
+      ];
+
+      function hydrateLazyVideo(v) {
+        if (!v || v.getAttribute("data-hydrated") === "1") return;
+        var url = v.getAttribute("data-video-src");
+        if (!url) return;
+        v.setAttribute("data-hydrated", "1");
+        v.src = url;
+        v.removeAttribute("data-video-src");
+        try {
+          v.load();
+        } catch (err) {}
+      }
+
+      function hydrateForNav(navId) {
+        VIDEO_SLIDES.forEach(function (def) {
+          if (def.navId === navId) hydrateLazyVideo(document.querySelector(def.sel));
+        });
+      }
+
+      var videoSlides = VIDEO_SLIDES.map(function (def) {
+        var video = document.querySelector(def.sel);
+        return video ? { navId: def.navId, video: video } : null;
+      }).filter(Boolean);
+
+      function pauseAllVideos() {
+        videoSlides.forEach(function (x) {
+          try {
+            if (!x.video.paused) x.video.pause();
+          } catch (err) {}
+        });
+      }
+
+      function tryPlayActiveSlide() {
+        var nav = document.querySelector('input[name="hcn-nav"]:checked');
+        if (!nav) return;
+        hydrateForNav(nav.id);
+        videoSlides.forEach(function (x) {
+          if (nav.id !== x.navId) return;
+          var v = x.video;
+          v.muted = true;
+          function doPlay() {
+            try {
+              var p = v.play();
+              if (p && typeof p.catch === "function") p.catch(function () {});
+            } catch (err) {}
+          }
+          if (v.readyState >= 2) doPlay();
+          else v.addEventListener("loadeddata", doPlay, { once: true });
+        });
+      }
+
+      function onNavChange() {
+        pauseAllVideos();
+        var nav = document.querySelector('input[name="hcn-nav"]:checked');
+        if (nav) hydrateForNav(nav.id);
+        window.setTimeout(tryPlayActiveSlide, 400);
+      }
+
+      document.querySelectorAll('input[name="hcn-nav"]').forEach(function (r) {
+        r.addEventListener("change", onNavChange);
+      });
+
+      tryPlayActiveSlide();
+    })();
+  </script>
+  <script>
+    (function () {
+      var QUOTES = {
+        cursor: {
+          text: "GPT-5.5는 GPT-5.4보다 눈에 띄게 더 똑똑하고 끈기 있으며, 더 강력한 코딩 성능을 제공하고 더 신뢰도 높은 도구 사용을 보입니다. 또한 중간에 멈추지 않고 작업을 훨씬 더 오래 지속할 수 있으며, 이는 사용자가 Cursor에 맡기는 장시간 동안 실행되는 복잡한 작업에서 특히 중요합니다.",
+          cite: "— Michael Truell, Cursor 공동 설립자 겸 CEO"
+        },
+        lovable: {
+          text: "개발자는 끝없는 반복이 아니라 지속적인 진전을 원합니다. GPT-5.5는 인증 흐름이나 실시간 동기화처럼 더 복잡한 작업에서 사람들이 보통 부딪히는 한계를 훨씬 적은 상호작용으로 돌파합니다. 모델은 업무가 어려워질수록 진가를 발휘하며, 훨씬 적은 상호작용으로도 까다로운 작업을 보다 수월하게 처리합니다.",
+          cite: "— Fabian Hedin, Lovable의 CTO 겸 공동 창립자"
+        },
+        cognition: {
+          text: "GPT-5.5는 Devin으로 무엇이 가능한지에 대한 새로운 기준을 제시했습니다. 이 모델은 우리가 테스트한 어떤 GPT 모델보다도 더 오래, 더 자율적으로 실행됩니다. 또한 다른 어떤 모델도 잡아내지 못하는 버그를 찾아내고, 프로덕션 문제도 엔드투엔드로 조사하고 해결합니다.",
+          cite: "— Scott Wu, Cognition 공동 설립자 겸 CEO"
+        },
+        windsurf: {
+          text: "GPT-5.5는 이전 GPT 모델에 비해 모호성 처리에 있어 크게 발전했습니다. Windsurf 2.0이 병렬 에이전트에 더욱 중점을 둠에 따라 이 모델은 장기적 작업에서 핵심적인 역할을 합니다. 이 모델은 의도를 이해하고, 복잡한 상황에서도 추론하고, 최소한의 반복으로 실행하는 데 뛰어납니다.",
+          cite: "— Jeff Wang, Windsurf 최고경영자"
+        },
+        github: {
+          text: "평가 시 복잡한 다단계 코딩 작업에서 유의미한 역량 향상이 확인됩니다. SWE-Bench에서 이 모델은 6퍼센트포인트 이상 더 많은 작업을 해결하며, 더 복잡한 워크플로에서 해결에 도달하기까지의 단계 수가 크게 감소하고(보통 50~60%) 엔드투엔드 완료 시간도 점진적으로 개선되고 있습니다. 따라서 개발자는 기다림과 수동 개입을 줄이는 동시에 시스템이 어려운 문제도 해결에 이를 때까지 처리할 수 있음을 더욱 더 확신할 수 있습니다.",
+          cite: "— Joe Binder, GitHub 제품 부문 부사장"
+        },
+        jetbrains: {
+          text: "우리 환경에서 가장 두드러졌던 점은 효율성이었습니다. 신형 모델은 간단한 작업에서는 당사 측정 기준으로 3배 더 빨랐으며, 동시에 강력한 프런트엔드 역량과 지시 수행 능력을 유지했습니다. 또한 작업에 맞춰 추론 수준도 조정하므로, 더 긴 추론은 실제로 필요한 작업에만 사용됩니다.",
+          cite: "— Denis Shiryaev, JetBrains AI 에코시스템 책임자"
+        },
+        sonar: {
+          text: "Sonar의 평가에 따르면, GPT-5.5는 최상위권 코딩 모델과 비교했을 때 코드 1,000줄당 버그와 취약점이 가장 적게 발생했습니다. GPT-5.5는 AI로 개발하는 팀을 위해 기능적일 뿐 아니라 프로덕션 배포 전에 디버깅하고 수정하는 데 드는 노력도 더 적은 코드를 생성하는 새로운 기준을 제시합니다.",
+          cite: "— Joe Tyler, Sonar 수석 AI 연구원"
+        }
+      };
+
+      var root = document.getElementById("hcn-card-8");
+      if (!root) return;
+      var textEl = root.querySelector(".slide-quote__text");
+      var citeEl = root.querySelector(".slide-quote__cite");
+      var chips = root.querySelectorAll(".slide-partner-chip[data-partner]");
+      if (!textEl || !citeEl || !chips.length) return;
+
+      function showPartner(key) {
+        var d = QUOTES[key];
+        if (!d) return;
+        textEl.textContent = d.text;
+        citeEl.textContent = d.cite;
+        chips.forEach(function (btn) {
+          var on = btn.getAttribute("data-partner") === key;
+          btn.classList.toggle("is-active", on);
+          btn.setAttribute("aria-selected", on ? "true" : "false");
+        });
+      }
+
+      chips.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var key = btn.getAttribute("data-partner");
+          if (key) showPartner(key);
+        });
+      });
+
+      showPartner("cursor");
+    })();
+  </script>
+</body>
+</html>

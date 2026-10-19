@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[A02]&#51204;&#47928;&#44032;&#46020; &#49324;&#50857;&#54616;&#45716; AI&#53812;</title>
+    <style>
+        /* 1. 기본 레이아웃 - 모바일 스크롤 이슈 해결을 위해 스타일 수정 */
+        body, html {
+            margin: 0;
+            padding: 0;
+            background-color: transparent; 
+            width: 100%;
+            /* 고정 높이 대신 최소 높이 설정으로 스크롤 허용 */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* 상단부터 배치하여 모바일에서 배너가 가려지는 현상 방지 */
+            justify-content: flex-start; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        /* [★건들지마3 - 초강력 은폐 강화판] */
+        .pub-input {
+            display: block !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
+            opacity: 0 !important;
+            filter: alpha(opacity=0) !important;
+            z-index: -1000 !important;
+            pointer-events: none !important;
+        }
+
+        /* [전체 컨테이너] */
+        .main-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; 
+            margin: 0 auto; 
+            font-size: 0;
+            line-height: 0;
+            text-align: center;
+            min-height: auto;
+            background: none;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 20px 0 0;
+            box-sizing: border-box;
+        }
+
+        /* ----------------------------------------------------------------
+           [상단 헤더 배너] 
+        ----------------------------------------------------------------- */
+        .weekly-header {
+            width: 100%;
+            max-width: 380px;
+            margin: 0 auto 20px;
+            text-align: left;
+            padding: 0 4px;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        .header-logo-text {
+            font-size: 52px;
+            font-weight: 900;
+            color: #004b8d;
+            line-height: 1.0; 
+            margin-bottom: 4px; 
+            letter-spacing: -2.5px;
+            display: inline-block;
+            text-transform: uppercase; 
+        }
+
+        .header-subtitle {
+            font-size: 16px;
+            font-weight: 800;
+            color: #1a1a1a;
+            line-height: 1.4;
+            margin-bottom: 6px; 
+            letter-spacing: -0.8px;
+            word-break: keep-all;
+        }
+
+        /* 상단 날짜 및 푸터 텍스트 공통 스타일 */
+        .meta-style {
+            font-size: 11px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            display: block;
+            line-height: 1.6;
+        }
+
+        .header-divider {
+            border: 0;
+            border-top: 2.5px solid #1a1a1a;
+            margin: 12px 0 0 0;
+        }
+
+        /* ----------------------------------------------------------------
+           [카드 뉴스 시스템] 본체
+        ----------------------------------------------------------------- */
+        .card-news-system {
+            width: 65%;
+            max-width: 380px; 
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            opacity: 1;
+        }
+
+        .pub-wrapper {
+            width: 100%;
+            background-color: #fff;
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.15);
+            position: relative;
+        }
+
+        .content-area {
+            position: relative;
+            display: block; 
+            width: 100%;
+            min-height: 500px; 
+        }
+
+        .pub-page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            opacity: 0;
+            z-index: 1;
+            pointer-events: none;
+            transition: opacity 0.4s ease-in-out;
+            background-color: #fff;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .pub-page img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border: 0;
+        }
+
+        .pg1 { position: relative !important; }
+        .home-link { position: absolute; top: 3.5%; right: 4.8%; width: 14%; height: 8%; z-index: 100; cursor: pointer; border-radius: 50%; }
+        .bg-link { display: block; width: 100%; height: 100%; cursor: pointer; }
+
+        /* ----------------------------------------------------------------
+           [하단 푸터 영역] 
+        ----------------------------------------------------------------- */
+        .weekly-footer {
+            width: 100%;
+            max-width: 380px;
+            margin: 24px auto 0;
+            text-align: left;
+            padding: 0 4px;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        .footer-divider {
+            border: 0;
+            border-top: 2.5px solid #1a1a1a; 
+            margin: 0 0 12px 0;
+        }
+
+        .footer-info {
+            margin-bottom: 2px;
+        }
+
+        /* 메뉴 그리드 및 좌표 보정 */
+        .menu-grid {
+            position: absolute; top: 22.5%; left: 8.5%; width: 73%; height: 48%; 
+            display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: 27px; pointer-events: none; z-index: 2;
+        }
+        .menu-item {
+            width: 100%; aspect-ratio: 1 / 1; cursor: pointer; pointer-events: auto;
+            background-image: url('https://kikeun.github.io/weeklyai/ai52.png');
+            background-size: 380px auto; background-repeat: no-repeat;
+            border-radius: 30%; position: relative; --tx: 0px; --ty: 0px; --bx: 0px; --by: 0px;
+            background-position: var(--bx) var(--by); transform: translate(var(--tx), var(--ty)) scale(1);
+            transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.2s;
+        }
+        .menu-item:hover { transform: translate(var(--tx), var(--ty)) scale(1.15); z-index: 10; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3)); }
+
+        .menu-item:nth-child(4n+1) { --tx: 0px;    --bx: -32.3px; }      
+        .menu-item:nth-child(4n+2) { --tx: -2.1px; --bx: -117.9px; }   
+        .menu-item:nth-child(4n+3) { --tx: -4.2px; --bx: -203.5px; }   
+        .menu-item:nth-child(4n)   { --tx: -6.3px; --bx: -289.0px; }     
+        .menu-item:nth-child(-n+4) { --ty: 0px; --by: -152.0px; } 
+        .menu-item:nth-child(n+5):nth-child(-n+8) { --ty: 45.4px; --by: -285.0px; } 
+        .menu-item:nth-child(n+9):nth-child(-n+12) { --ty: 90.8px; --by: -418.4px; } 
+        .menu-item:nth-child(n+13) { --ty: 135.4px; --by: -549.8px; } 
+        .menu-item:nth-child(1) { --tx: 0.8px; } .menu-item:nth-child(2) { --tx: -1.3px; } .menu-item:nth-child(3) { --tx: -3.4px; } .menu-item:nth-child(4) { --tx: -5.5px; }
+        .menu-item:nth-child(9)  { --tx: 0.8px; } .menu-item:nth-child(10) { --tx: -1.3px; } .menu-item:nth-child(11) { --tx: -3.4px; } .menu-item:nth-child(12) { --tx: -5.5px; }
+        .menu-item:nth-child(4)  { --ty: -0.8px; } .menu-item:nth-child(8)  { --ty: 44.6px; } .menu-item:nth-child(12) { --ty: 90.0px; } .menu-item:nth-child(16) { --ty: 134.6px; }
+
+        /* 페이지 전환 로직 */
+        #page1:checked ~ .card-news-system .pub-wrapper .content-area .pg1, 
+        #page2:checked ~ .card-news-system .pub-wrapper .content-area .pg2,
+        #page3:checked ~ .card-news-system .pub-wrapper .content-area .pg3, 
+        #page4:checked ~ .card-news-system .pub-wrapper .content-area .pg4,
+        #page5:checked ~ .card-news-system .pub-wrapper .content-area .pg5, 
+        #page6:checked ~ .card-news-system .pub-wrapper .content-area .pg6,
+        #page7:checked ~ .card-news-system .pub-wrapper .content-area .pg7, 
+        #page8:checked ~ .card-news-system .pub-wrapper .content-area .pg8,
+        #page9:checked ~ .card-news-system .pub-wrapper .content-area .pg9, 
+        #page10:checked ~ .card-news-system .pub-wrapper .content-area .pg10,
+        #page11:checked ~ .card-news-system .pub-wrapper .content-area .pg11, 
+        #page12:checked ~ .card-news-system .pub-wrapper .content-area .pg12,
+        #page13:checked ~ .card-news-system .pub-wrapper .content-area .pg13, 
+        #page14:checked ~ .card-news-system .pub-wrapper .content-area .pg14,
+        #page15:checked ~ .card-news-system .pub-wrapper .content-area .pg15, 
+        #page16:checked ~ .card-news-system .pub-wrapper .content-area .pg16,
+        #page17:checked ~ .card-news-system .pub-wrapper .content-area .pg17, 
+        #page18:checked ~ .card-news-system .pub-wrapper .content-area .pg18 {
+            opacity: 1; z-index: 10; pointer-events: auto;
+        }
+    </style>
+
+<!--[if gte mso 9]><xml>
+<mso:CustomDocumentProperties>
+<mso:Thumbnail msdt:dt="string">{&quot;fileName&quot;:&quot;2&#50500;&#53944;&#48372;&#46300; 2-100.jpg&quot;,&quot;originalImageName&quot;:null,&quot;serverRelativeUrl&quot;:&quot;/sites/Playground/SiteAssets/Lists/6ab53b02-e1e4-4eca-8489-3ae42b71211f/2&#50500;&#53944;&#48372;&#46300;%202-100.jpg&quot;,&quot;id&quot;:&quot;e2dbeb6b-3ae3-44d8-a7d6-6cafa765b81f&quot;,&quot;serverUrl&quot;:&quot;https://o365hdec.sharepoint.com&quot;,&quot;thumbnailRenderer&quot;:null}</mso:Thumbnail>
+<mso:Format msdt:dt="string"></mso:Format>
+<mso:Notes msdt:dt="string"></mso:Notes>
+</mso:CustomDocumentProperties>
+</xml><![endif]-->
+</head>
+<body>
+
+    <div class="main-container">
+        <!-- 상태 제어용 라디오 버튼 -->
+        <input type="radio" id="page1" name="ai_pub" class="pub-input" checked>
+        <input type="radio" id="page2" name="ai_pub" class="pub-input">
+        <input type="radio" id="page3" name="ai_pub" class="pub-input">
+        <input type="radio" id="page4" name="ai_pub" class="pub-input">
+        <input type="radio" id="page5" name="ai_pub" class="pub-input">
+        <input type="radio" id="page6" name="ai_pub" class="pub-input">
+        <input type="radio" id="page7" name="ai_pub" class="pub-input">
+        <input type="radio" id="page8" name="ai_pub" class="pub-input">
+        <input type="radio" id="page9" name="ai_pub" class="pub-input">
+        <input type="radio" id="page10" name="ai_pub" class="pub-input">
+        <input type="radio" id="page11" name="ai_pub" class="pub-input">
+        <input type="radio" id="page12" name="ai_pub" class="pub-input">
+        <input type="radio" id="page13" name="ai_pub" class="pub-input">
+        <input type="radio" id="page14" name="ai_pub" class="pub-input">
+        <input type="radio" id="page15" name="ai_pub" class="pub-input">
+        <input type="radio" id="page16" name="ai_pub" class="pub-input">
+        <input type="radio" id="page17" name="ai_pub" class="pub-input">
+        <input type="radio" id="page18" name="ai_pub" class="pub-input">
+
+        <!-- [카드 뉴스 시스템] -->
+        <div class="card-news-system">
+            <div class="pub-wrapper">
+                <div class="content-area">
+                    <label for="page2" class="pub-page pg1">
+                        <img src="https://kikeun.github.io/weeklyai/ai70.jpg" alt="표지">
+                    </label>
+                    <div class="pub-page pg2">
+                        <img src="https://kikeun.github.io/weeklyai/ai52.png" alt="메뉴배경">
+                        <label for="page1" class="home-link" title="홈으로"></label>
+                        <div class="menu-grid">
+                            <label for="page3" class="menu-item"></label> <label for="page4" class="menu-item"></label> <label for="page5" class="menu-item"></label> <label for="page6" class="menu-item"></label> 
+                            <label for="page7" class="menu-item"></label> <label for="page8" class="menu-item"></label> <label for="page9" class="menu-item"></label> <label for="page10" class="menu-item"></label> 
+                            <label for="page11" class="menu-item"></label> <label for="page12" class="menu-item"></label> <label for="page13" class="menu-item"></label> <label for="page14" class="menu-item"></label> 
+                            <label for="page15" class="menu-item"></label> <label for="page16" class="menu-item"></label> <label for="page17" class="menu-item"></label> <label for="page18" class="menu-item"></label> 
+                        </div>
+                    </div>
+                    <div class="pub-page pg3"><label for="page1" class="home-link"></label><label for="page2" class="bg-link"><img src="https://kikeun.github.io/weeklyai/ai53.png" alt="C1"></label></div>
+                    <div class="pub-page pg4"><label for="page1" class="home-link"></label><label for="page2" class="bg-link"><img src="https://kikeun.github.io/weeklyai/ai54.png" alt="C2"></label></div>
+                    <div class="pub-page pg5"><label for="page1" class="home-link"></label><label for="page2" class="bg-link"><img src="https://kikeun.github.io/weeklyai/ai55.png" alt="C3"></label></div>
+                    <div class="pub-page pg6"><label for="page1" class="home-link"></label><label for="page2" class="bg-link"><img src="https://kikeun.github.io/weeklyai/ai56.png" alt="C4"></label></div>
+                    <div class="pub-page pg7"><label for="page1" class="home-link"></label><label for="page2" class="bg-link"><img src="https://kikeun.github.io/weeklyai/ai57.png" alt="C5"></label></div>
+                    <div class="pub-page pg8"><label for="page1" class="home-link"></label><label for="page2" class="bg-link"><img src="https://kikeun.github.io/weeklyai/ai58.png" alt="C6"></label></div>
+                    <div class="pub-page pg9"><label for="page1" class="home-link"></label><label for="page2" class="bg-link"><img src="https://kikeun.github.io/weeklyai/ai59.png" alt="C7"></label></div>
+                    <div class="pub-page pg10"><label for="page1" class="home-link"></label><label for="page2" class="bg-link"><img src="https://kikeun.github.io/weeklyai/ai60.png" alt="C8"></label></div>
+                    <div class="pub-page pg11"><label for="page1" class="home-link"></label><label for="page2" class="bg-link"><img src="https://kikeun.github.io/weeklyai/ai61.png" alt="C9"></label></div>
+                    <div class="pub-page pg12"><label for="page1" class="home-link"></label><label for="page2" class="bg-link"><img src="https://kikeun.github.io/weeklyai/ai62.png" alt="C10"></label></div>
+                    <div class="pub-page pg13"><label for="page1" class="home-link"></label><label for="page2" class="bg-link"><img src="https://kikeun.github.io/weeklyai/ai63.png" alt="C11"></label></div>
+                    <div class="pub-page pg14"><label for="page1" class="home-link"></label><label for="page2" class="bg-link"><img src="https://kikeun.github.io/weeklyai/ai64.png" alt="C12"></label></div>
+                    <div class="pub-page pg15"><label for="page1" class="home-link"></label><label for="page2" class="bg-link"><img src="https://kikeun.github.io/weeklyai/ai65.png" alt="C13"></label></div>
+                    <div class="pub-page pg16"><label for="page1" class="home-link"></label><label for="page2" class="bg-link"><img src="https://kikeun.github.io/weeklyai/ai66.png" alt="C14"></label></div>
+                    <div class="pub-page pg17"><label for="page1" class="home-link"></label><label for="page2" class="bg-link"><img src="https://kikeun.github.io/weeklyai/ai67.png" alt="C15"></label></div>
+                    <div class="pub-page pg18"><label for="page1" class="home-link"></label><label for="page2" class="bg-link"><img src="https://kikeun.github.io/weeklyai/ai68.png" alt="C16"></label></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

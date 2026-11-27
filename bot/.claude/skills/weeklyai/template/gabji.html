@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weekly AI 갑지 (VOL.{{VOL}})</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/static/pretendard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root { --font-sans: Pretendard, "Noto Sans KR", "Malgun Gothic", system-ui, -apple-system, "Segoe UI", sans-serif; --cover-w: 1274; --cover-h: 971; }
+    html, body { height: 100%; background: #06040a; }
+    body { font-family: var(--font-sans); color: #fff; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 16px; }
+
+    /* ════ 갑지 (1274×971) — vol{{VOL}} {{THEME_NAME}} ({{CATEGORY}}) ════
+       배경 소스: {{BG_NOTE}} */
+    .cover {
+      width: min(calc(100vw - 32px), calc((100vh - 32px) * var(--cover-w) / var(--cover-h)), 1274px);
+      aspect-ratio: var(--cover-w) / var(--cover-h);
+      container-type: size; position: relative; overflow: hidden;
+      border-radius: 12px; box-shadow: 0 30px 70px -30px rgba(0,0,0,0.8);
+      /* ★ 색은 전부 변수로 — JS가 getComputedStyle로 읽어 캔버스에 같은 값을 그림 (가이드 §7-1) */
+      --accent: {{accent2}};   --accent-no: {{accent}};   --badge-bg: rgba({{shadow_rgb}},0.50);
+      --bg-a: {{cover_top}}; --bg-b: {{card_mid}}; --bg-c: {{card_bot}};
+      --scrim-top: rgba({{shadow_rgb}},{{SCRIM_TOP}}); --scrim-mid: rgba({{shadow_rgb}},{{SCRIM_MID}}); --scrim-bot: rgba({{shadow_rgb}},{{SCRIM_BOT}});
+      --vig-in: rgba({{shadow_rgb}},0.08);     --vig-out: rgba({{shadow_rgb}},0.58);
+    }
+    .cover__base { position: absolute; inset: 0; z-index: 0;
+      background: linear-gradient(162deg, var(--bg-a) 0%, var(--bg-b) 48%, var(--bg-c) 100%); }
+    .cover__bg { position: absolute; inset: 0; z-index: 1; }
+    .cover__bg img { width: 100%; height: 100%; object-fit: cover; object-position: center center; display: block; }
+    .cover__vig { position: absolute; inset: 0; z-index: 2; pointer-events: none;
+      background: radial-gradient(118% 92% at 50% 46%, var(--vig-in) 24%, var(--vig-out) 100%); }
+    .cover__scrim { position: absolute; inset: 0; z-index: 3; pointer-events: none;
+      background: linear-gradient(180deg, var(--scrim-top) 0%, var(--scrim-mid) 26%, var(--scrim-bot) 100%); }
+
+    /* 정중앙 텍스트 (가이드 §1-4) */
+    .cover__center { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 8cqw; gap: 3.4cqh; }
+    .badge { display: inline-flex; align-items: center; gap: 0.8cqw; padding: 1cqh 1.8cqw 1cqh 1.5cqw; font-size: 1.7cqw; font-weight: 800; letter-spacing: 0.14em; color: #fff; background: var(--badge-bg); border: 1px solid rgba(255,255,255,0.34); border-radius: 999px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+    .badge::before { content: ""; width: 0.75cqw; height: 0.75cqw; border-radius: 50%; background: var(--accent); animation: pulseDot 2.2s ease-in-out infinite; }
+    @keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.5;transform:scale(.82);} }
+    /* 강조(mark)는 투명 그라데이션 금지 → 선명한 단색 + 그림자 (가이드 §1-5) */
+    .headline { font-weight: 900; line-height: 1.2; letter-spacing: -0.04em; font-size: 6.2cqw; color: #fff; word-break: keep-all; text-shadow: 0 0.5cqh 2.6cqw rgba(0,0,0,0.72); }
+    .headline .mark { display: inline-block; font-size: 1.06em; font-weight: 900; color: var(--accent); text-shadow: 0 0.5cqh 2.6cqw rgba(0,0,0,0.78); }
+    .headline .no { font-size: 1.5em; line-height: 0; font-weight: 900; color: var(--accent-no); text-shadow: 0 0.5cqh 2.6cqw rgba(0,0,0,0.78); }
+    .dek { font-size: 2.1cqw; font-weight: 600; line-height: 1.5; letter-spacing: -0.02em; color: rgba(255,255,255,0.94); word-break: keep-all; text-shadow: 0 0.3cqh 1.6cqw rgba(0,0,0,0.72); }
+
+    .dl-bar { position: fixed; top: 16px; right: 16px; z-index: 30; display: flex; gap: 8px; align-items: center; }
+    .dl-btn { font-family: var(--font-sans); font-size: 13px; font-weight: 800; letter-spacing: 0.02em; color: #131A36; background: #A9C0FF; border: none; border-radius: 999px; padding: 9px 16px; cursor: pointer; box-shadow: 0 6px 18px -6px rgba(0,0,0,0.6); transition: transform .12s, filter .12s; }
+    .dl-btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
+    .dl-btn:disabled { opacity: .5; cursor: default; transform: none; }
+    .dl-msg { font-size: 12px; font-weight: 700; color: #ffb4a8; }
+  </style>
+</head>
+<body>
+
+  <!-- 갑지: 배경(cover{{VOL}}.webp) + 정중앙 제목 -->
+  <div class="cover cover--v{{VOL}}" id="cover" data-vol="{{VOL}}">
+    <div class="cover__base"></div>
+    {{BG_IMG}}
+    <div class="cover__vig"></div>
+    <div class="cover__scrim"></div>
+    <div class="cover__center">
+      <span class="badge">VOL.{{VOL}} ｜ {{CATEGORY}}</span>
+      <h1 class="headline">{{HEADLINE}}</h1>
+      {{DEK}}
+    </div>
+  </div>
+
+  <div class="dl-bar">
+    <button class="dl-btn" id="dlOne">PNG 저장</button>
+    <span class="dl-msg" id="dlMsg"></span>
+  </div>
+
+  <script>
+  (function () {
+    const W = 1274, H = 971;
+    const CQW = W / 100, CQH = H / 100;
+    const FONT = 'Pretendard, "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif';
+    const cover = document.getElementById('cover');
+    const msg = document.getElementById('dlMsg');
+    const v = (name) => getComputedStyle(cover).getPropertyValue(name).trim();
+
+    function roundRect(ctx, x, y, w, h, r) { r = Math.min(r, h/2, w/2); ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+    function setFont(ctx, weight, sizePx, spacingEm) { ctx.font = weight + ' ' + sizePx + 'px ' + FONT; try { ctx.letterSpacing = (spacingEm * sizePx) + 'px'; } catch (e) {} }
+    function shadow(ctx, blur, offsetY, color) { ctx.shadowColor = color; ctx.shadowBlur = blur; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = offsetY; }
+    function noShadow(ctx) { ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; }
+    function parseHeadline(el) { const lines=[[]]; el.childNodes.forEach(n=>{ if(n.nodeType===1&&n.tagName==='BR'){lines.push([]);return;} const text=(n.textContent||''); if(!text)return; const m=n.nodeType===1&&n.classList&&n.classList.contains('mark'); const no=n.nodeType===1&&n.classList&&n.classList.contains('no'); lines[lines.length-1].push({text:text,mark:m,no:no}); }); return lines.filter(l=>l.length); }
+    /* CSS linear-gradient(Ndeg) 와 동일한 시작·끝점 (중심 통과, 길이 = |W·sin|+|H·cos|) */
+    function cssLinear(ctx, deg) {
+      const r = deg * Math.PI / 180, dx = Math.sin(r), dy = -Math.cos(r);
+      const L = Math.abs(W * dx) + Math.abs(H * dy);
+      return ctx.createLinearGradient(W/2 - dx*L/2, H/2 - dy*L/2, W/2 + dx*L/2, H/2 + dy*L/2);
+    }
+
+    async function render() {
+      const canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+
+      /* 1) 베이스 그라데이션 162deg (이미지 실패 시 폴백) */
+      const g = cssLinear(ctx, 162);
+      g.addColorStop(0, v('--bg-a')); g.addColorStop(0.48, v('--bg-b')); g.addColorStop(1, v('--bg-c'));
+      ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+
+      /* 2) 배경 이미지 — CSS object-fit: cover 와 동일 (가이드 §7-4) */
+      const bg = document.getElementById('bgImg');
+      if (bg && bg.naturalWidth) {
+        const iw = bg.naturalWidth, ih = bg.naturalHeight;
+        const s = Math.max(W/iw, H/ih), dw = iw*s, dh = ih*s;
+        ctx.drawImage(bg, (W-dw)/2, (H-dh)/2, dw, dh);
+      }
+
+      /* 3) 비네트 — radial 118% 92% at 50% 46%, 24% → 100% (타원이므로 세로로 눌러서 그린다) */
+      const rx = 1.18*W, ry = 0.92*H, k = ry/rx;
+      ctx.save();
+      ctx.translate(0.5*W, 0.46*H); ctx.scale(1, k);
+      const vg = ctx.createRadialGradient(0,0,rx*0.24,0,0,rx);
+      vg.addColorStop(0, v('--vig-in')); vg.addColorStop(1, v('--vig-out'));
+      ctx.fillStyle = vg; ctx.fillRect(-W, -2*H/k, 2*W, 4*H/k);
+      ctx.restore();
+
+      /* 4) 스크림 — linear 180deg, 0% / 26% / 100% */
+      const sc = ctx.createLinearGradient(0,0,0,H);
+      sc.addColorStop(0, v('--scrim-top')); sc.addColorStop(0.26, v('--scrim-mid')); sc.addColorStop(1, v('--scrim-bot'));
+      ctx.fillStyle = sc; ctx.fillRect(0,0,W,H);
+
+      /* 5) 정중앙 텍스트 */
+      const accent=v('--accent'), accentNo=v('--accent-no'), badgeBg=v('--badge-bg');
+      const badgeEl=cover.querySelector('.badge'), headEl=cover.querySelector('.headline'), dekEl=cover.querySelector('.dek');
+      const bFs=1.7*CQW, bPadY=1*CQH, bPadL=1.5*CQW, bPadR=1.8*CQW, bDot=0.75*CQW, bGap=0.8*CQW;
+      const hFs=6.2*CQW, hLine=hFs*1.2, mFs=hFs*1.06, nFs=hFs*1.5;
+      const dFs=2.1*CQW, dLine=dFs*1.5;
+      const gapT=3.4*CQH;
+      const badgeText=badgeEl?badgeEl.textContent.trim():'';
+      setFont(ctx,'800',bFs,0.14); const bTextW=badgeText?ctx.measureText(badgeText).width:0;
+      const bW=bPadL+bDot+bGap+bTextW+bPadR, bH=bPadY*2+bFs*1.2;
+      const hLines=headEl?parseHeadline(headEl):[]; const hH=hLines.length*hLine;
+      const dekText=dekEl?dekEl.textContent.trim():''; const dH=dekText?dLine:0;
+      let total=(badgeText?bH:0)+hH+(dekText?dH:0); total+=gapT*((badgeText?1:0)+(dekText?1:0));
+      let y=(H-total)/2;                                   /* ← 정중앙 */
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      if (badgeText) {
+        const bx=(W-bW)/2;
+        ctx.fillStyle=badgeBg; roundRect(ctx,bx,y,bW,bH,bH/2); ctx.fill();
+        ctx.strokeStyle='rgba(255,255,255,0.34)'; ctx.lineWidth=1; roundRect(ctx,bx+0.5,y+0.5,bW-1,bH-1,bH/2); ctx.stroke();
+        ctx.fillStyle=accent; ctx.beginPath(); ctx.arc(bx+bPadL+bDot/2,y+bH/2,bDot/2,0,Math.PI*2); ctx.fill();
+        setFont(ctx,'800',bFs,0.14); ctx.fillStyle='#fff'; ctx.textAlign='left'; ctx.fillText(badgeText,bx+bPadL+bDot+bGap,y+bH/2); ctx.textAlign='center';
+        y+=bH+gapT;
+      }
+      shadow(ctx,2.6*CQW,0.5*CQH,'rgba(0,0,0,0.72)');
+      hLines.forEach(segs=>{
+        const fs=s=>s.no?nFs:(s.mark?mFs:hFs);
+        const widths=segs.map(s=>{ setFont(ctx,'900',fs(s),-0.04); return ctx.measureText(s.text).width; });
+        const lineW=widths.reduce((a,b)=>a+b,0); let x=(W-lineW)/2; ctx.textAlign='left';
+        segs.forEach((s,i)=>{ setFont(ctx,'900',fs(s),-0.04); ctx.fillStyle=s.no?accentNo:(s.mark?accent:'#fff');
+          ctx.fillText(s.text,x,y+hLine/2-0.35*(fs(s)-hFs)); x+=widths[i]; });
+        ctx.textAlign='center'; y+=hLine;
+      });
+      noShadow(ctx);
+      if (dekText) { y+=gapT; shadow(ctx,1.6*CQW,0.3*CQH,'rgba(0,0,0,0.72)'); setFont(ctx,'600',dFs,-0.02); ctx.fillStyle='rgba(255,255,255,0.94)'; ctx.fillText(dekText,W/2,y+dLine/2); noShadow(ctx); }
+      return canvas;
+    }
+
+    document.getElementById('dlOne').addEventListener('click', async function () {
+      const btn=this, label=btn.textContent; btn.disabled=true; btn.textContent='저장 중…'; msg.textContent='';
+      try {
+        if (document.fonts && document.fonts.ready) await document.fonts.ready;
+        const bg=document.getElementById('bgImg');
+        if (bg && !bg.complete) await new Promise(r=>{ bg.onload=r; bg.onerror=r; });
+        const canvas=await render();
+        const blob=await new Promise((res,rej)=>{ try{ canvas.toBlob(b=>b?res(b):rej(new Error('toBlob 실패')),'image/png'); }catch(e){rej(e);} });
+        const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='WeeklyAI_VOL'+(cover.dataset.vol||'')+'_갑지.png';
+        document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+      } catch(e){ msg.textContent='저장 실패 — 내장된 배포본에서 열어주세요'; console.error(e); }
+      btn.textContent=label; btn.disabled=false;
+    });
+  })();
+  </script>
+</body>
+</html>

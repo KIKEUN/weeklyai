@@ -1,0 +1,94 @@
+<script>
+    (function () {
+      function ensureInitialChecked() {
+        var checked = document.querySelector('input[name="hcn-nav"]:checked');
+        if (!checked) { var first = document.getElementById('hcn-nav-1'); if (first) first.checked = true; }
+      }
+      ensureInitialChecked();
+      window.addEventListener('pageshow', ensureInitialChecked);
+
+      // ── 노래가 나오는 장 (video[data-sound], 가이드 §16): 첫 사용자 조작 뒤부터 소리 켜고 재생. 안 되면 ♪ 버튼으로.
+      var userActed = false;
+      function markActed() { userActed = true; }
+      document.addEventListener('pointerdown', markActed, true);
+      document.addEventListener('keydown', markActed, true);
+      function setSoundBtn(card) {
+        var b = card.querySelector('.sound-btn'); var v = card.querySelector('video[data-sound]');
+        if (!b || !v) return;
+        var on = !v.muted && !v.paused;
+        b.classList.toggle('is-on', on);
+        b.querySelector('.txt').textContent = on ? '소리 끄기' : '소리 켜기';
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      }
+      document.addEventListener('click', function (e) {
+        if (!e.target.closest) return;
+        var b = e.target.closest('.sound-btn'); if (!b) return;
+        e.preventDefault(); e.stopPropagation();
+        var card = b.closest('.card'); var v = card && card.querySelector('video[data-sound]'); if (!v) return;
+        if (v.muted || v.paused) { v.muted = false; v.volume = 1; var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+        else { v.muted = true; }
+        setSoundBtn(card);
+      }, true);
+
+      var navs = document.querySelectorAll('input[name="hcn-nav"]');
+      function syncVideos() {
+        var checked = document.querySelector('input[name="hcn-nav"]:checked');
+        var activeId = checked ? checked.id.replace('hcn-nav-', 'hcn-card-') : 'hcn-card-1';
+        var cards = document.querySelectorAll('#deck > .card');
+        Array.prototype.forEach.call(cards, function (card) {
+          var v = card.querySelector('video');
+          if (v) {
+            if (card.id === activeId) {
+              try { v.currentTime = 0; } catch (e) {}
+              var wantSound = v.hasAttribute('data-sound') && userActed; v.muted = !wantSound;
+              var p = v.play(); if (p && p.catch) p.catch(function () { v.muted = true; var q = v.play(); if (q && q.catch) q.catch(function () {}); setSoundBtn(card); });
+              setSoundBtn(card);
+            }
+            else { v.pause(); v.muted = true; try { v.currentTime = 0; } catch (e) {} setSoundBtn(card); }
+          }
+        });
+      }
+      Array.prototype.forEach.call(navs, function (n) { n.addEventListener('change', syncVideos); });
+      syncVideos();
+      window.addEventListener('pageshow', syncVideos);
+
+
+      // 유튜브: 썸네일 클릭 시 재생. file:// 에서는 임베드가 차단되므로 새 탭.
+      document.addEventListener('click', function (e) {
+        if (!e.target.closest) return;
+        var f = e.target.closest('.yt-facade');
+        if (!f) return;
+        e.preventDefault();
+        var vid = f.getAttribute('data-vid');
+        if (location.protocol === 'file:') {
+          window.open('https://www.youtube.com/watch?v=' + vid, '_blank', 'noopener');
+          return;
+        }
+        var ifr = document.createElement('iframe');
+        ifr.src = 'https://www.youtube.com/embed/' + vid + '?autoplay=1&rel=0';
+        ifr.title = f.getAttribute('data-title') || '';
+        ifr.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
+        ifr.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+        ifr.setAttribute('allowfullscreen', '');
+        f.parentNode.replaceChild(ifr, f);
+      });
+
+      var box = document.getElementById('lightbox');
+      var boxImg = document.getElementById('lightbox-img');
+      var boxVid = document.getElementById('lightbox-video');
+      function openImage(src, alt) { boxVid.pause(); boxVid.removeAttribute('src'); boxVid.style.display = 'none'; boxImg.src = src; boxImg.alt = alt || ''; boxImg.style.display = 'block'; box.classList.add('is-open'); box.setAttribute('aria-hidden', 'false'); }
+      function openVideo(src, sound) { Array.prototype.forEach.call(document.querySelectorAll('#deck video'), function (cv) { cv.pause(); }); boxVid.muted = !sound; boxImg.style.display = 'none'; boxImg.src = ''; boxVid.src = src; boxVid.style.display = 'block'; box.classList.add('is-open'); box.setAttribute('aria-hidden', 'false'); try { boxVid.currentTime = 0; } catch (e) {} var p = boxVid.play(); if (p && p.catch) p.catch(function () {}); }
+      function closeLightbox() { box.classList.remove('is-open'); box.setAttribute('aria-hidden', 'true'); boxImg.src = ''; boxVid.pause(); boxVid.removeAttribute('src'); boxVid.load(); syncVideos(); }
+
+      document.addEventListener('click', function (e) {
+        if (!e.target.closest) return;
+        var img = e.target.closest('.slide-media-slot > img');
+        if (img) { e.preventDefault(); openImage(img.currentSrc || img.src, img.alt); return; }
+        var vid = e.target.closest('.slide-media-slot > video');
+        if (vid) { e.preventDefault(); var s = vid.currentSrc; if (!s) { var src = vid.querySelector('source'); s = src ? src.src : ''; } if (s) openVideo(s, vid.hasAttribute('data-sound')); }
+      });
+
+      box.addEventListener('click', function (e) { if (e.target === boxVid) return; closeLightbox(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeLightbox(); } });
+    })();
+  </script>

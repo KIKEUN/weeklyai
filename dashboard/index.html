@@ -303,10 +303,10 @@ async function loadVols() {
   const box = $('#vols');
   try {
     const latest = await findLatest();
-    const nums = [];
-    for (let n = latest; n >= 1 && nums.length < CONFIG.volCount && latest - n < 12; n--) {
-      if (await exists(n)) nums.push(n);
-    }
+    const cands = [];
+    for (let n = latest; n >= 1 && latest - n < 12; n--) cands.push(n);
+    const ok = await Promise.all(cands.map(exists));
+    const nums = cands.filter((n, i) => ok[i]).slice(0, CONFIG.volCount);
     if (!nums.length) throw new Error('no vols');
     $('#latestVol').textContent = 'VOL.' + nums[0];
     const items = await Promise.all(nums.map(async (n) => {

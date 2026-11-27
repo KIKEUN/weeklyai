@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Weekly AI 대시보드</title>
+<link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  /* ════════ 설정은 맨 아래 <script> 의 CONFIG 에서 ════════ */
+  :root {
+    --bg: #F3F4F7;
+    --surface: #FFFFFF;
+    --ink: #0E1116;
+    --ink-2: #3A404B;
+    --muted: #6B7280;
+    --line: #E2E5EA;
+    --accent: #2F54EB;
+    --accent-soft: #E8EDFF;
+    --copilot-a: #0F6CBD;
+    --copilot-b: #8B5CF6;
+    --radius: 18px;
+    --font: Pretendard, "Noto Sans KR", "Malgun Gothic", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { background: var(--bg); }
+  body { background: var(--bg); color: var(--ink); font-family: var(--font); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 40px 24px 48px; }
+
+  /* ── 머리 ── */
+  .hero {
+    position: relative; overflow: hidden; border-radius: 24px; padding: 40px 44px;
+    background: radial-gradient(120% 140% at 100% 0%, #24317A 0%, #121735 45%, #0A0D1F 100%);
+    color: #fff; display: grid; grid-template-columns: 1fr auto; gap: 32px; align-items: end;
+  }
+  .hero::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background-image: radial-gradient(rgba(255,255,255,.10) 1px, transparent 1px);
+    background-size: 22px 22px; mask-image: linear-gradient(90deg, transparent 30%, #000 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 30%, #000 100%);
+  }
+  .hero > * { position: relative; z-index: 1; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: .14em;
+    color: #AFC0FF; text-transform: uppercase; margin-bottom: 14px;
+  }
+  .eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #6E8BFF; box-shadow: 0 0 0 4px rgba(110,139,255,.22); }
+  .hero h1 { font-size: clamp(40px, 6vw, 64px); font-weight: 800; letter-spacing: -.035em; line-height: 1; }
+  .hero h1 span { color: #8EA6FF; }
+  .hero p { margin-top: 18px; max-width: 620px; font-size: 16px; color: rgba(255,255,255,.78); line-height: 1.7; word-break: keep-all; }
+  .hero-stat {
+    min-width: 168px; padding: 18px 20px; border-radius: 16px; background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.14); backdrop-filter: blur(6px);
+  }
+  .hero-stat small { display: block; font-size: 12px; color: rgba(255,255,255,.6); font-weight: 600; }
+  .hero-stat b { display: block; font-size: 34px; font-weight: 800; letter-spacing: -.02em; margin-top: 2px; }
+  .hero-stat em { font-style: normal; font-size: 12px; color: #AFC0FF; }
+
+  /* ── 구역 머리 ── */
+  .sec { margin-top: 44px; }
+  .sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+  .sec-num { font-size: 13px; font-weight: 800; color: var(--accent); letter-spacing: .06em; }
+  .sec-head h2 { font-size: 26px; font-weight: 800; letter-spacing: -.025em; margin-top: 2px; }
+  .sec-head p { font-size: 14px; color: var(--muted); margin-top: 6px; word-break: keep-all; }
+  .more {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; color: var(--ink-2);
+    padding: 9px 14px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); transition: .2s;
+  }
+  .more:hover { border-color: var(--ink); color: var(--ink); }
+
+  /* ── Weekly AI 카드 ── */
+  .vols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .vol {
+    --c-top: #1F2A5A; --c-bot: #0B1030; --c-acc: #8EA6FF;
+    display: flex; flex-direction: column; background: var(--surface); border-radius: var(--radius); overflow: hidden;
+    border: 1px solid var(--line); transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .vol:hover { transform: translateY(-4px); box-shadow: 0 24px 40px -24px rgba(14,17,22,.35); }
+  .vol-cover { position: relative; aspect-ratio: 3 / 4; background: linear-gradient(180deg, var(--c-top), var(--c-bot)); overflow: hidden; }
+  .vol-cover img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s ease; }
+  .vol:hover .vol-cover img { transform: scale(1.03); }
+  .vol-cover::after { content: ""; position: absolute; inset: 55% 0 0; background: linear-gradient(180deg, transparent, rgba(0,0,0,.55)); }
+  .vol-cover .fallback {
+    position: absolute; inset: 0; padding: 26px; display: flex; align-items: flex-end;
+    color: #fff; font-size: 24px; font-weight: 800; line-height: 1.3; letter-spacing: -.02em; word-break: keep-all;
+  }
+  .vol-cover .fallback::before {
+    content: "AI"; position: absolute; top: 14px; right: 18px; font-size: 120px; font-weight: 900; line-height: 1;
+    color: var(--c-acc); opacity: .18; letter-spacing: -.06em;
+  }
+  .chip {
+    position: absolute; z-index: 2; top: 14px; left: 14px; padding: 6px 11px; border-radius: 999px;
+    font-size: 12px; font-weight: 800; letter-spacing: .04em; background: rgba(255,255,255,.94); color: var(--ink);
+  }
+  .chip.new { left: auto; right: 14px; background: var(--accent); color: #fff; }
+  .vol-body { padding: 18px 20px 20px; display: flex; flex-direction: column; flex: 1; }
+  .vol-body h3 {
+    font-size: 18px; font-weight: 800; line-height: 1.4; letter-spacing: -.02em; word-break: keep-all;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .vol-body p {
+    margin-top: 8px; font-size: 14px; color: var(--muted); line-height: 1.65; word-break: keep-all;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .vol-go { margin-top: auto; padding-top: 16px; font-size: 14px; font-weight: 700; color: var(--accent); }
+
+  /* ── Copilot 영상 ── */
+  .copilot-tag {
+    background: linear-gradient(90deg, var(--copilot-a), var(--copilot-b)); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .videos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .video { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .video-frame { position: relative; aspect-ratio: 16 / 9; background: #0B0D12; }
+  .video-frame > div, .video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .video-meta { padding: 16px 20px 18px; display: flex; gap: 14px; align-items: flex-start; }
+  .video-meta .idx {
+    flex: none; font-size: 12px; font-weight: 800; padding: 5px 10px; border-radius: 999px;
+    color: #fff; background: linear-gradient(90deg, var(--copilot-a), var(--copilot-b));
+  }
+  .video-meta .idx.prev { background: #E9EBF0; color: var(--ink-2); }
+  .video-meta h3 { font-size: 16px; font-weight: 700; line-height: 1.45; letter-spacing: -.01em; word-break: keep-all; }
+  .video-meta h3 a:hover { text-decoration: underline; }
+
+  /* ── 로딩·오류 ── */
+  .skel { background: linear-gradient(90deg, #ECEEF2 0%, #F7F8FA 50%, #ECEEF2 100%); background-size: 200% 100%; animation: sh 1.3s infinite; border-radius: 8px; }
+  @keyframes sh { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+  .skel-line { height: 16px; margin-top: 10px; }
+  .notice {
+    grid-column: 1 / -1; padding: 28px; text-align: center; border-radius: var(--radius); background: var(--surface);
+    border: 1px dashed var(--line); color: var(--muted); font-size: 14px;
+  }
+  .notice a { color: var(--accent); font-weight: 700; }
+  .foot { margin-top: 36px; text-align: center; font-size: 12px; color: #9AA1AD; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+  @media (max-width: 900px) {
+    .vols { grid-template-columns: repeat(2, 1fr); }
+    .vols .vol:nth-child(3) { display: none; }
+  }
+  @media (max-width: 720px) {
+    .wrap { padding: 16px 16px 32px; }
+    .hero { grid-template-columns: 1fr; padding: 28px 24px; }
+    .hero-stat { justify-self: start; }
+    .vols, .videos { grid-template-columns: 1fr; }
+    .vols .vol:nth-child(3) { display: flex; }
+    .vol { flex-direction: row; }
+    .vol-cover { flex: none; width: 116px; aspect-ratio: 3 / 4; }
+    .vol-cover .fallback { font-size: 0; padding: 12px; }
+    .vol-cover .fallback::before { font-size: 54px; }
+    .vol-body { padding: 14px 16px; }
+    .vol-body h3 { font-size: 16px; }
+    .vol-body p { -webkit-line-clamp: 2; font-size: 13px; }
+    .vol-go { padding-top: 8px; font-size: 13px; }
+    .chip { top: 8px; left: 8px; font-size: 10px; padding: 4px 8px; }
+    .chip.new { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div>
+      <div class="eyebrow">AI Design Lab · 주간 AI 소식</div>
+      <h1>Weekly <span>AI</span></h1>
+      <p>Weekly AI는 매주 꼭 알아 두면 좋을 AI 소식을 골라 카드뉴스로 정리해 전합니다. 이 페이지에서는 가장 최근에 나온 세 가지 소식을 소개하며 새 호가 올라오면 화면도 자동으로 바뀝니다.</p>
+    </div>
+    <div class="hero-stat">
+      <small>최신호</small>
+      <b id="latestVol">VOL.–</b>
+      <em>매주 업데이트</em>
+    </div>
+  </header>
+
+  <section class="sec">
+    <div class="sec-head">
+      <div>
+        <div class="sec-num">01</div>
+        <h2>Weekly AI 최신 소식</h2>
+        <p>카드를 누르면 카드뉴스 전체를 새 창에서 볼 수 있습니다.</p>
+      </div>
+    </div>
+    <div class="vols" id="vols">
+      <div class="vol"><div class="vol-cover skel"></div><div class="vol-body"><div class="skel skel-line" style="width:80%"></div><div class="skel skel-line"></div><div class="skel skel-line" style="width:60%"></div></div></div>
+      <div class="vol"><div class="vol-cover skel"></div><div class="vol-body"><div class="skel skel-line" style="width:80%"></div><div class="skel skel-line"></div><div class="skel skel-line" style="width:60%"></div></div></div>
+      <div class="vol"><div class="vol-cover skel"></div><div class="vol-body"><div class="skel skel-line" style="width:80%"></div><div class="skel skel-line"></div><div class="skel skel-line" style="width:60%"></div></div></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <div>
+        <div class="sec-num">02</div>
+        <h2><span class="copilot-tag">Copilot</span> 소식</h2>
+        <p>Microsoft Copilot 공식 유튜브 채널에 올라온 최신 영상 두 편을 모았으며 새 영상이 올라오면 이곳도 함께 바뀝니다.</p>
+      </div>
+      <a class="more" id="channelLink" href="#" target="_blank" rel="noopener">채널 바로가기 ↗</a>
+    </div>
+    <div class="videos" id="videos"></div>
+  </section>
+
+  <div class="foot" id="foot">AI Design Lab</div>
+</div>
+
+<script>
+/* ════════ 설정 ════════ */
+const CONFIG = {
+  base: 'https://kikeun.github.io/weeklyai/',   // weeklyaivolN.html 이 올라가는 곳
+  floorVol: 34,                                 // 이 번호부터 위로 찾아 올라간다(낮아도 동작, 높으면 느려지지 않음)
+  volCount: 3,
+  headBytes: 450000,                            // 호마다 앞부분만 읽는다(제목·설명·표지가 이 안에 있음)
+  ytChannelId: 'UCnba_sSOe_umiHCpYYvRCqQ',     // @microsoft.copilot 채널 ID
+  ytChannelUrl: 'https://www.youtube.com/@microsoft.copilot',
+  videoCount: 2,
+};
+
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const volUrl = (n) => CONFIG.base + 'weeklyaivol' + n + '.html';
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+};
+
+/* ════════ Weekly AI ════════ */
+const existsCache = {};
+function exists(n) {
+  if (!(n in existsCache)) {
+    existsCache[n] = fetch(volUrl(n), { method: 'HEAD', cache: 'no-store' }).then((r) => r.ok).catch(() => false);
+  }
+  return existsCache[n];
+}
+
+// 가장 큰 번호 찾기: 마지막으로 본 번호(또는 floor)에서 출발해, 3칸 연속 비면 멈춘다(중간에 빠진 호 허용)
+async function findLatest() {
+  let n = Math.max(CONFIG.floorVol, parseInt(store.get('wai_latest') || '0', 10) || 0);
+  for (let guard = 0; !(await exists(n)) && n > 1 && guard < 15; guard++) n--;
+  for (;;) {
+    const next = [n + 1, n + 2, n + 3];
+    const hit = await Promise.all(next.map(exists));
+    const last = hit.lastIndexOf(true);
+    if (last < 0) break;
+    n = next[last];
+  }
+  store.set('wai_latest', String(n));
+  return n;
+}
+
+async function readHead(url, limit) {
+  const res = await fetch(url, { headers: { Range: 'bytes=0-' + (limit - 1) }, cache: 'no-cache' });
+  if (!res.ok) throw new Error(res.status);
+  if (!res.body || !res.body.getReader) return (await res.text()).slice(0, limit);
+  const reader = res.body.getReader();
+  const dec = new TextDecoder('utf-8');
+  let out = '', got = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    got += value.length;
+    out += dec.decode(value, { stream: true });
+    if (got >= limit) { reader.cancel().catch(() => {}); break; }
+  }
+  return out;
+}
+
+const stripTags = (s) => s.replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+function decodeEntities(s) { const t = document.createElement('textarea'); t.innerHTML = s; return t.value; }
+
+function parseVol(n, h) {
+  const title = decodeEntities(stripTags((h.match(/<title>([\s\S]*?)<\/title>/i) || [])[1] || ''));
+  const desc = decodeEntities((h.match(/<meta\s+name="description"\s+content="([^"]*)"/i) || [])[1] || '');
+  let headline = '';
+  const hm = h.match(/<h1[^>]*class="[^"]*cover-headline[^"]*"[^>]*>([\s\S]*?)<\/h1>/i);
+  if (hm) headline = decodeEntities(stripTags(hm[1]));
+  if (!headline && /\s[—–-]\s/.test(title)) headline = title.split(/\s+[—–-]\s+/).slice(1).join(' — ');
+  // 표지: .cover-media-img 의 src(이미지) 또는 poster(영상)
+  let cover = '';
+  const tag = (h.match(/<(?:img|video)\b[^>]*cover-media-img[^>]*>/i) || [])[0];
+  if (tag) {
+    const m = tag.match(/\b(?:src|poster)="([^"]+)"/i);
+    if (m && !/^data:video/i.test(m[1])) cover = m[1].startsWith('data:') ? m[1] : new URL(m[1], CONFIG.base).href;
+  }
+  const v = (name) => ((h.match(new RegExp('--' + name + ':\\s*(#[0-9a-fA-F]{3,8})')) || [])[1]);
+  return {
+    n, cover, desc,
+    title: headline || ('Weekly AI VOL.' + n),
+    top: v('card-top'), bot: v('card-bot'), acc: v('accent'),
+  };
+}
+
+function volCard(d, isNew) {
+  const style = [d.top && '--c-top:' + d.top, d.bot && '--c-bot:' + d.bot, d.acc && '--c-acc:' + d.acc].filter(Boolean).join(';');
+  const cover = d.cover
+    ? '<img src="' + esc(d.cover) + '" alt="" loading="lazy" decoding="async">'
+    : '<div class="fallback">' + esc(d.title) + '</div>';
+  return '<a class="vol" href="' + esc(volUrl(d.n)) + '" target="_blank" rel="noopener" style="' + style + '">' +
+    '<div class="vol-cover">' + cover + '<span class="chip">VOL.' + d.n + '</span>' + (isNew ? '<span class="chip new">NEW</span>' : '') + '</div>' +
+    '<div class="vol-body"><h3>' + esc(d.title) + '</h3>' + (d.desc ? '<p>' + esc(d.desc) + '</p>' : '') +
+    '<span class="vol-go">카드뉴스 보기 ↗</span></div></a>';
+}
+
+async function loadVols() {
+  const box = $('#vols');
+  try {
+    const latest = await findLatest();
+    const nums = [];
+    for (let n = latest; n >= 1 && nums.length < CONFIG.volCount && latest - n < 12; n--) {
+      if (await exists(n)) nums.push(n);
+    }
+    if (!nums.length) throw new Error('no vols');
+    $('#latestVol').textContent = 'VOL.' + nums[0];
+    const items = await Promise.all(nums.map(async (n) => {
+      try { return parseVol(n, await readHead(volUrl(n), CONFIG.headBytes)); }
+      catch (e) { return { n, title: 'Weekly AI VOL.' + n, desc: '', cover: '' }; }
+    }));
+    box.innerHTML = items.map((d, i) => volCard(d, i === 0)).join('');
+  } catch (e) {
+    box.innerHTML = '<div class="notice">Weekly AI 목록을 불러오지 못했습니다. <a href="' + esc(CONFIG.base) + '" target="_blank" rel="noopener">Weekly AI 바로가기</a></div>';
+  }
+}
+
+/* ════════ Copilot (YouTube 업로드 재생목록) ════════ */
+// UC… → UULF… (쇼츠 뺀 일반 영상 업로드 목록), 실패하면 UU…(전체 업로드)
+const lists = [ 'UULF' + CONFIG.ytChannelId.slice(2), 'UU' + CONFIG.ytChannelId.slice(2) ];
+
+function loadVideos() {
+  $('#channelLink').href = CONFIG.ytChannelUrl;
+  const box = $('#videos');
+  let html = '';
+  for (let i = 0; i < CONFIG.videoCount; i++) {
+    html += '<div class="video"><div class="video-frame"><div id="yt' + i + '"></div></div>' +
+      '<div class="video-meta"><span class="idx' + (i ? ' prev' : '') + '">' + (i ? '이전 영상' : '최신 영상') + '</span>' +
+      '<h3 id="ytt' + i + '"><span class="skel" style="display:block;height:18px;width:220px"></span></h3></div></div>';
+  }
+  box.innerHTML = html;
+
+  const fail = () => {
+    box.innerHTML = '<div class="notice">영상을 불러오지 못했습니다. <a href="' + esc(CONFIG.ytChannelUrl) + '" target="_blank" rel="noopener">유튜브 채널에서 보기</a></div>';
+  };
+  const timer = setTimeout(() => { if (!window.YT || !window.YT.Player) fail(); }, 12000);
+
+  window.onYouTubeIframeAPIReady = () => {
+    clearTimeout(timer);
+    for (let i = 0; i < CONFIG.videoCount; i++) makePlayer(i, 0);
+  };
+  const s = document.createElement('script');
+  s.src = 'https://www.youtube.com/iframe_api';
+  s.onerror = fail;
+  document.head.appendChild(s);
+}
+
+function makePlayer(i, listIdx) {
+  const list = lists[listIdx];
+  const p = new YT.Player('yt' + i, {
+    width: '100%', height: '100%',
+    playerVars: { rel: 0, playsinline: 1, modestbranding: 1 },
+    events: {
+      onReady: (e) => e.target.cuePlaylist({ listType: 'playlist', list, index: i }),
+      onStateChange: (e) => {
+        if (e.data !== YT.PlayerState.CUED) return;
+        const d = (e.target.getVideoData && e.target.getVideoData()) || {};
+        const t = $('#ytt' + i);
+        if (d.video_id) {
+          t.innerHTML = '<a href="https://www.youtube.com/watch?v=' + esc(d.video_id) + '" target="_blank" rel="noopener">' + esc(d.title || 'Copilot 영상') + '</a>';
+        } else if (t.querySelector('.skel')) {
+          t.textContent = 'Microsoft Copilot';
+        }
+      },
+      onError: () => {
+        if (listIdx + 1 < lists.length) {
+          p.destroy();
+          const frame = document.querySelectorAll('.video-frame')[i];
+          frame.innerHTML = '<div id="yt' + i + '"></div>';
+          makePlayer(i, listIdx + 1);
+        } else {
+          $('#ytt' + i).innerHTML = '<a href="' + esc(CONFIG.ytChannelUrl) + '" target="_blank" rel="noopener">유튜브 채널에서 보기 ↗</a>';
+        }
+      },
+    },
+  });
+}
+
+loadVols();
+loadVideos();
+$('#foot').textContent = 'AI Design Lab · 페이지를 열 때마다 최신 내용으로 갱신됩니다';
+</script>
+</body>
+</html>

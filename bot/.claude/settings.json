@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python .claude/skills/weeklyai/scripts/*)",
+      "Bash(python .claude/skills/humanize-korean/scripts/*)",
+      "Bash(export PYTHONIOENCODING=utf-8*)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(curl --ssl-no-revoke *)",
+      "Read(**)",
+      "WebFetch"
+    ]
+  }
+}

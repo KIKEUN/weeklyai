@@ -7,8 +7,13 @@
 import json, os, random, shutil, socket, subprocess, tempfile, time, urllib.request
 import websocket
 
-CHROME = [r'C:\Program Files\Google\Chrome\Application\chrome.exe',
-          r'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe']
+_LOCAL = os.environ.get('LOCALAPPDATA', '')
+CHROME = [os.environ.get('WAI_CHROME', ''),
+          r'C:\Program Files\Google\Chrome\Application\chrome.exe',
+          r'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe',
+          os.path.join(_LOCAL, r'Google\Chrome\Application\chrome.exe'),
+          r'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe',
+          r'C:\Program Files\Microsoft\Edge\Application\msedge.exe']
 
 
 def _free_port():
@@ -23,7 +28,9 @@ def _free_port():
 class Chrome:
     def __init__(self, width=1440, height=1000, mobile=False, profile=None, headless=True, start='about:blank'):
         """profile: 로그인 유지용 고정 프로필 폴더(없으면 매번 새 임시 폴더). headless=False 면 창이 뜬다."""
-        exe = next(p for p in CHROME if os.path.exists(p))
+        exe = next((p for p in CHROME if p and os.path.exists(p)), None)
+        if not exe:
+            raise RuntimeError('Chrome/Edge 를 못 찾음. 설치하거나 환경변수 WAI_CHROME 에 chrome.exe 경로를 넣으세요.')
         self.port = _free_port()
         self.keep = bool(profile)
         self.prof = profile or tempfile.mkdtemp(prefix='wai_cdp_')

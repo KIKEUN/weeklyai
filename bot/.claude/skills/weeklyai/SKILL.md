@@ -76,6 +76,7 @@ python $B/media.py img 원본/x.png volN/공식_요금표.webp --fit16 [--y N]  
 
 ### 4. `volN/cards.py` 작성
 `.claude/skills/weeklyai/template/cards_example.py`(= VOL.28 실제 사양)를 복사해서 고친다. 한 파일에 표지·장·테마·갑지가 다 들어간다.
+최신 기준(§9-4) 문구·구성은 `.claude/skills/weeklyai/examples/vol30~34/cards.py` 를 참고한다(가장 최근 호가 기준). 새 호를 확정하면 그 `cards.py` 도 `examples/volN/` 에 복사해 둔다.
 - `THEME`: 직전 호와 다른 색으로. 프리셋 `plum`(VOL.28)·`forest`(VOL.27)·`night`(VOL.29), 또는 `scripts/wai.py ROLES` 의 20개 역할에 색을 주는 dict(어두운 배경 3단 + 밝은 글자 + 강조색 2 + 보조색). 주제 브랜드 색(공식 페이지 하이라이트)에서 고른다.
 - 표지 `css` 의 `rgba(13, 8, 11, …)` 그라데이션은 테마 배경색(`card_bot`)에 맞춰 바꾼다.
 
